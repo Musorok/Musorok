@@ -1,0 +1,439 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7BCF7ECB2E4787040076180D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECA2E4787040076180D /* AppDelegate.swift */; };
+		7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECC2E4787040076180D /* SceneDelegate.swift */; };
+		7BCF7ED42E4787050076180D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BCF7ED32E4787050076180D /* Assets.xcassets */; };
+		7BCF7ED72E4787050076180D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BCF7ED52E4787050076180D /* LaunchScreen.storyboard */; };
+		7BCF7EE02E4787BC0076180D /* RootTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EDF2E4787BC0076180D /* RootTabBarController.swift */; };
+		7BCF7EE32E4788340076180D /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EE22E4788340076180D /* HomeViewController.swift */; };
+		7BCF7EE52E47886C0076180D /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EE42E47886C0076180D /* CategoryViewController.swift */; };
+		7BCF7EE82E4788BB0076180D /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EE72E4788BB0076180D /* PrimaryButton.swift */; };
+		7BCF7EEA2E4788DF0076180D /* ScheduleCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EE92E4788DF0076180D /* ScheduleCardView.swift */; };
+		7BCF7EED2E4789140076180D /* OrdersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EEC2E4789140076180D /* OrdersViewController.swift */; };
+		7BCF7EF02E4789320076180D /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EEF2E4789320076180D /* ProfileViewController.swift */; };
+		7BCF7EF32E4789800076180D /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF22E4789800076180D /* UIColor+Extension.swift */; };
+		7BCF7EF62E4789C70076180D /* AuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF52E4789C70076180D /* AuthViewController.swift */; };
+		7BCF7EF82E4789EC0076180D /* FormInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF72E4789EC0076180D /* FormInputView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		7BCF7EC72E4787040076180D /* MusorOk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusorOk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BCF7ECA2E4787040076180D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		7BCF7ECC2E4787040076180D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		7BCF7ED32E4787050076180D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7BCF7ED62E4787050076180D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		7BCF7ED82E4787050076180D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7BCF7EDF2E4787BC0076180D /* RootTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabBarController.swift; sourceTree = "<group>"; };
+		7BCF7EE22E4788340076180D /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		7BCF7EE42E47886C0076180D /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
+		7BCF7EE72E4788BB0076180D /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
+		7BCF7EE92E4788DF0076180D /* ScheduleCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCardView.swift; sourceTree = "<group>"; };
+		7BCF7EEC2E4789140076180D /* OrdersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersViewController.swift; sourceTree = "<group>"; };
+		7BCF7EEF2E4789320076180D /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		7BCF7EF22E4789800076180D /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
+		7BCF7EF52E4789C70076180D /* AuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewController.swift; sourceTree = "<group>"; };
+		7BCF7EF72E4789EC0076180D /* FormInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormInputView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7BCF7EC42E4787040076180D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7BCF7EBE2E4787040076180D = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EC92E4787040076180D /* MusorOk */,
+				7BCF7EC82E4787040076180D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7BCF7EC82E4787040076180D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EC72E4787040076180D /* MusorOk.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7BCF7EC92E4787040076180D /* MusorOk */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7ECA2E4787040076180D /* AppDelegate.swift */,
+				7BCF7ECC2E4787040076180D /* SceneDelegate.swift */,
+				7BCF7EF42E4789B80076180D /* AuthView */,
+				7BCF7EF12E4789630076180D /* Extensions */,
+				7BCF7EEE2E4789280076180D /* ProfileView */,
+				7BCF7EEB2E47890C0076180D /* OrdersView */,
+				7BCF7EE62E4788AA0076180D /* SomeViews */,
+				7BCF7EE12E4788090076180D /* HomeView */,
+				7BCF7EDE2E4787AF0076180D /* Tabbar */,
+				7BCF7ED32E4787050076180D /* Assets.xcassets */,
+				7BCF7ED52E4787050076180D /* LaunchScreen.storyboard */,
+				7BCF7ED82E4787050076180D /* Info.plist */,
+			);
+			path = MusorOk;
+			sourceTree = "<group>";
+		};
+		7BCF7EDE2E4787AF0076180D /* Tabbar */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EDF2E4787BC0076180D /* RootTabBarController.swift */,
+			);
+			path = Tabbar;
+			sourceTree = "<group>";
+		};
+		7BCF7EE12E4788090076180D /* HomeView */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EE22E4788340076180D /* HomeViewController.swift */,
+				7BCF7EE42E47886C0076180D /* CategoryViewController.swift */,
+			);
+			path = HomeView;
+			sourceTree = "<group>";
+		};
+		7BCF7EE62E4788AA0076180D /* SomeViews */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EE72E4788BB0076180D /* PrimaryButton.swift */,
+				7BCF7EF72E4789EC0076180D /* FormInputView.swift */,
+				7BCF7EE92E4788DF0076180D /* ScheduleCardView.swift */,
+			);
+			path = SomeViews;
+			sourceTree = "<group>";
+		};
+		7BCF7EEB2E47890C0076180D /* OrdersView */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EEC2E4789140076180D /* OrdersViewController.swift */,
+			);
+			path = OrdersView;
+			sourceTree = "<group>";
+		};
+		7BCF7EEE2E4789280076180D /* ProfileView */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EEF2E4789320076180D /* ProfileViewController.swift */,
+			);
+			path = ProfileView;
+			sourceTree = "<group>";
+		};
+		7BCF7EF12E4789630076180D /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EF22E4789800076180D /* UIColor+Extension.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		7BCF7EF42E4789B80076180D /* AuthView */ = {
+			isa = PBXGroup;
+			children = (
+				7BCF7EF52E4789C70076180D /* AuthViewController.swift */,
+			);
+			path = AuthView;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7BCF7EC62E4787040076180D /* MusorOk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7BCF7EDB2E4787050076180D /* Build configuration list for PBXNativeTarget "MusorOk" */;
+			buildPhases = (
+				7BCF7EC32E4787040076180D /* Sources */,
+				7BCF7EC42E4787040076180D /* Frameworks */,
+				7BCF7EC52E4787040076180D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MusorOk;
+			productName = MusorOk;
+			productReference = 7BCF7EC72E4787040076180D /* MusorOk.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7BCF7EBF2E4787040076180D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					7BCF7EC62E4787040076180D = {
+						CreatedOnToolsVersion = 14.2;
+					};
+				};
+			};
+			buildConfigurationList = 7BCF7EC22E4787040076180D /* Build configuration list for PBXProject "MusorOk" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7BCF7EBE2E4787040076180D;
+			productRefGroup = 7BCF7EC82E4787040076180D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7BCF7EC62E4787040076180D /* MusorOk */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7BCF7EC52E4787040076180D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7BCF7ED72E4787050076180D /* LaunchScreen.storyboard in Resources */,
+				7BCF7ED42E4787050076180D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7BCF7EC32E4787040076180D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7BCF7EF62E4789C70076180D /* AuthViewController.swift in Sources */,
+				7BCF7EE82E4788BB0076180D /* PrimaryButton.swift in Sources */,
+				7BCF7EE52E47886C0076180D /* CategoryViewController.swift in Sources */,
+				7BCF7EEA2E4788DF0076180D /* ScheduleCardView.swift in Sources */,
+				7BCF7EED2E4789140076180D /* OrdersViewController.swift in Sources */,
+				7BCF7ECB2E4787040076180D /* AppDelegate.swift in Sources */,
+				7BCF7EE02E4787BC0076180D /* RootTabBarController.swift in Sources */,
+				7BCF7EF02E4789320076180D /* ProfileViewController.swift in Sources */,
+				7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */,
+				7BCF7EF82E4789EC0076180D /* FormInputView.swift in Sources */,
+				7BCF7EE32E4788340076180D /* HomeViewController.swift in Sources */,
+				7BCF7EF32E4789800076180D /* UIColor+Extension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		7BCF7ED52E4787050076180D /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7BCF7ED62E4787050076180D /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		7BCF7ED92E4787050076180D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		7BCF7EDA2E4787050076180D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7BCF7EDC2E4787050076180D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MusorOk/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = musorok.MusorOk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7BCF7EDD2E4787050076180D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MusorOk/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = musorok.MusorOk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7BCF7EC22E4787040076180D /* Build configuration list for PBXProject "MusorOk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7BCF7ED92E4787050076180D /* Debug */,
+				7BCF7EDA2E4787050076180D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7BCF7EDB2E4787050076180D /* Build configuration list for PBXNativeTarget "MusorOk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7BCF7EDC2E4787050076180D /* Debug */,
+				7BCF7EDD2E4787050076180D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7BCF7EBF2E4787040076180D /* Project object */;
+}
