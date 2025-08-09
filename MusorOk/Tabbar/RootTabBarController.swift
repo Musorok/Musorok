@@ -8,6 +8,8 @@
 import UIKit
 
 final class RootTabBarController: UITabBarController {
+    private weak var ordersNav: UINavigationController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -18,7 +20,10 @@ final class RootTabBarController: UITabBarController {
                                        image: UIImage(systemName: "house"),
                                        selectedImage: UIImage(systemName: "house.fill"))
 
-        let orders = UINavigationController(rootViewController: OrdersViewController())
+        let authContainer = AuthContainerViewController()
+        authContainer.delegate = self
+        let orders = UINavigationController(rootViewController: authContainer)
+        self.ordersNav = orders
         orders.tabBarItem = UITabBarItem(title: "Заказы",
                                          image: UIImage(systemName: "list.bullet"),
                                          selectedImage: UIImage(systemName: "list.bullet"))
@@ -29,5 +34,20 @@ final class RootTabBarController: UITabBarController {
                                           selectedImage: UIImage(systemName: "person.crop.circle.fill"))
 
         viewControllers = [home, orders, profile]
+    }
+}
+
+extension RootTabBarController: AuthFlowDelegate {
+    func authDidSucceed() {
+        // Куда ведём после авторизации:
+        let ordersList = OrdersViewController() // твой реальный экран
+
+        // Меняем корень во вкладке «Заказы»
+        if let nav = ordersNav ?? (viewControllers?[1] as? UINavigationController) {
+            nav.setViewControllers([ordersList], animated: true)
+        }
+
+        // Можно сразу переключить пользователя на эту вкладку
+        selectedIndex = 1
     }
 }

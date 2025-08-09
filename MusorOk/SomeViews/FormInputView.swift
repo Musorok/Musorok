@@ -8,22 +8,29 @@
 import UIKit
 
 final class FormInputView: UIView, UITextFieldDelegate {
+    
+    private var wasPrefixError = false
 
-    // Публичные API
-    var text: String? { field.text }
+    // MARK: Public API
+    var text: String? { field.text }             // отформатированный текст (телефон — с +7 и пробелами)
+    var rawText: String? { rawValue }            // "сырое" значение: для телефона это 10 цифр без кода страны
     var onTextChange: ((String) -> Void)?
+    var isKZPhoneMask: Bool = false              // Включает форматирование телефона
 
-    // UI
+    // MARK: UI
     private let titleLabel = UILabel()
     private let field = PaddedTextField()
     private var eyeButton: UIButton?
     private let isSecure: Bool
+    private var rawValue: String?                // хранит "сырое" значение (для телефона — 10 цифр)
 
     init(title: String,
          placeholder: String,
          keyboard: UIKeyboardType,
-         isSecure: Bool) {
+         isSecure: Bool,
+         isKZPhoneMask: Bool = false) {
         self.isSecure = isSecure
+        self.isKZPhoneMask = isKZPhoneMask
         super.init(frame: .zero)
 
         translatesAutoresizingMaskIntoConstraints = false
@@ -37,7 +44,7 @@ final class FormInputView: UIView, UITextFieldDelegate {
         field.autocorrectionType = .no
         field.autocapitalizationType = .none
         field.clearButtonMode = .never
-        field.textColor = .label                // всегда черный/системный
+        field.textColor = .label
         field.tintColor = .brandGreen
         field.placeholder = placeholder
         field.layer.cornerRadius = 12
@@ -46,6 +53,13 @@ final class FormInputView: UIView, UITextFieldDelegate {
         field.delegate = self
         field.translatesAutoresizingMaskIntoConstraints = false
         field.heightAnchor.constraint(equalToConstant: 54).isActive = true
+        
+        if isKZPhoneMask {
+            field.attributedPlaceholder = NSAttributedString(
+                string: "+7 ___ ___ __ __",
+                attributes: [.foregroundColor: UIColor.systemGray3]
+            )
+        }
 
         if isSecure {
             field.isSecureTextEntry = true
@@ -73,7 +87,6 @@ final class FormInputView: UIView, UITextFieldDelegate {
             field.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
-        // стартовое состояние
         updateColors()
         field.addTarget(self, action: #selector(editingChanged), for: .editingChanged)
         field.addTarget(self, action: #selector(editingEnded), for: .editingDidEnd)
@@ -81,6 +94,17 @@ final class FormInputView: UIView, UITextFieldDelegate {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    private func shake(_ v: UIView) {
+        let anim = CAKeyframeAnimation(keyPath: "transform.translation.x")
+        anim.values = [-6, 6, -5, 5, -3, 3, 0]
+        anim.duration = 0.35
+        anim.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        v.layer.add(anim, forKey: "shake")
+        if #available(iOS 10.0, *) {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+    }
 
     @objc private func toggleSecure() {
         field.isSecureTextEntry.toggle()
@@ -89,6 +113,13 @@ final class FormInputView: UIView, UITextFieldDelegate {
     }
 
     @objc private func editingChanged() {
+        if isKZPhoneMask {
+            // Переформатируем полностью после любого изменения
+            let digits = PhoneFormatter.onlyDigits(from: field.text ?? "")
+            let formatted = PhoneFormatter.formatKZ(digits: digits)
+            field.text = formatted.text
+            rawValue = formatted.nationalDigits // 10 цифр
+        }
         onTextChange?(field.text ?? "")
         updateColors()
     }
@@ -97,21 +128,51 @@ final class FormInputView: UIView, UITextFieldDelegate {
 
     private func updateColors() {
         let hasText = !(field.text?.isEmpty ?? true)
-        // Цвет бордера и заголовка: серый если пусто, зелёный если заполнено
-        let border: UIColor = hasText ? .brandGreen : .systemGray4
-        let title: UIColor  = hasText ? .brandGreen : .secondaryLabel
+        var border: UIColor = hasText ? .brandGreen : .systemGray4
+        var title:  UIColor = hasText ? .brandGreen : .secondaryLabel
+
+        var isPrefixError = false
+        if isKZPhoneMask {
+            let national = rawValue ?? ""
+            if national.count == 10 && !PhoneFormatter.isValidKZMobile(nationalDigits: national) {
+                isPrefixError = true
+                border = .systemRed
+                title  = .systemRed
+            }
+        }
+
+        // 🔔 Шейк только когда вошли в состояние ошибки (false -> true)
+        if isPrefixError && !wasPrefixError {
+            shake(field)
+        }
+        wasPrefixError = isPrefixError
 
         field.layer.borderColor = border.cgColor
         titleLabel.textColor = title
     }
+
+    // MARK: UITextFieldDelegate
+    func textField(_ textField: UITextField,
+                   shouldChangeCharactersIn range: NSRange,
+                   replacementString string: String) -> Bool {
+        guard isKZPhoneMask else { return true }
+        // Делаем "свою" замену: считаем новые цифры и кладём отформатированный текст
+        let current = textField.text ?? ""
+        let new = (current as NSString).replacingCharacters(in: range, with: string)
+        let digits = PhoneFormatter.onlyDigits(from: new)
+        let formatted = PhoneFormatter.formatKZ(digits: digits)
+        textField.text = formatted.text
+        rawValue = formatted.nationalDigits
+        onTextChange?(formatted.text)
+        updateColors()
+        return false // уже выставили текст сами
+    }
 }
 
-// Внутренний UITextField с паддингом
+// UITextField с паддингами
 final class PaddedTextField: UITextField {
     private let insets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
-
     override func textRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: insets) }
     override func editingRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: insets) }
     override func placeholderRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: insets) }
 }
-

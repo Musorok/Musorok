@@ -19,8 +19,12 @@
 		7BCF7EED2E4789140076180D /* OrdersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EEC2E4789140076180D /* OrdersViewController.swift */; };
 		7BCF7EF02E4789320076180D /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EEF2E4789320076180D /* ProfileViewController.swift */; };
 		7BCF7EF32E4789800076180D /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF22E4789800076180D /* UIColor+Extension.swift */; };
-		7BCF7EF62E4789C70076180D /* AuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF52E4789C70076180D /* AuthViewController.swift */; };
+		7BCF7EF62E4789C70076180D /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF52E4789C70076180D /* LoginViewController.swift */; };
 		7BCF7EF82E4789EC0076180D /* FormInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF72E4789EC0076180D /* FormInputView.swift */; };
+		7BCF7EFA2E47D4CA0076180D /* PhoneFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EF92E47D4CA0076180D /* PhoneFormatter.swift */; };
+		7BCF7EFC2E47D4EC0076180D /* CheckBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EFB2E47D4EC0076180D /* CheckBox.swift */; };
+		7BCF7EFE2E47D51A0076180D /* RegistrationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EFD2E47D51A0076180D /* RegistrationViewController.swift */; };
+		7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7EFF2E47D6690076180D /* AuthContainerViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,8 +42,12 @@
 		7BCF7EEC2E4789140076180D /* OrdersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersViewController.swift; sourceTree = "<group>"; };
 		7BCF7EEF2E4789320076180D /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		7BCF7EF22E4789800076180D /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
-		7BCF7EF52E4789C70076180D /* AuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewController.swift; sourceTree = "<group>"; };
+		7BCF7EF52E4789C70076180D /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		7BCF7EF72E4789EC0076180D /* FormInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormInputView.swift; sourceTree = "<group>"; };
+		7BCF7EF92E47D4CA0076180D /* PhoneFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneFormatter.swift; sourceTree = "<group>"; };
+		7BCF7EFB2E47D4EC0076180D /* CheckBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBox.swift; sourceTree = "<group>"; };
+		7BCF7EFD2E47D51A0076180D /* RegistrationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationViewController.swift; sourceTree = "<group>"; };
+		7BCF7EFF2E47D6690076180D /* AuthContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthContainerViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +119,8 @@
 				7BCF7EE72E4788BB0076180D /* PrimaryButton.swift */,
 				7BCF7EF72E4789EC0076180D /* FormInputView.swift */,
 				7BCF7EE92E4788DF0076180D /* ScheduleCardView.swift */,
+				7BCF7EF92E47D4CA0076180D /* PhoneFormatter.swift */,
+				7BCF7EFB2E47D4EC0076180D /* CheckBox.swift */,
 			);
 			path = SomeViews;
 			sourceTree = "<group>";
@@ -142,7 +152,9 @@
 		7BCF7EF42E4789B80076180D /* AuthView */ = {
 			isa = PBXGroup;
 			children = (
-				7BCF7EF52E4789C70076180D /* AuthViewController.swift */,
+				7BCF7EF52E4789C70076180D /* LoginViewController.swift */,
+				7BCF7EFD2E47D51A0076180D /* RegistrationViewController.swift */,
+				7BCF7EFF2E47D6690076180D /* AuthContainerViewController.swift */,
 			);
 			path = AuthView;
 			sourceTree = "<group>";
@@ -217,7 +229,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7BCF7EF62E4789C70076180D /* AuthViewController.swift in Sources */,
+				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
+				7BCF7EF62E4789C70076180D /* LoginViewController.swift in Sources */,
 				7BCF7EE82E4788BB0076180D /* PrimaryButton.swift in Sources */,
 				7BCF7EE52E47886C0076180D /* CategoryViewController.swift in Sources */,
 				7BCF7EEA2E4788DF0076180D /* ScheduleCardView.swift in Sources */,
@@ -226,6 +239,9 @@
 				7BCF7EE02E4787BC0076180D /* RootTabBarController.swift in Sources */,
 				7BCF7EF02E4789320076180D /* ProfileViewController.swift in Sources */,
 				7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */,
+				7BCF7EFE2E47D51A0076180D /* RegistrationViewController.swift in Sources */,
+				7BCF7EFA2E47D4CA0076180D /* PhoneFormatter.swift in Sources */,
+				7BCF7EFC2E47D4EC0076180D /* CheckBox.swift in Sources */,
 				7BCF7EF82E4789EC0076180D /* FormInputView.swift in Sources */,
 				7BCF7EE32E4788340076180D /* HomeViewController.swift in Sources */,
 				7BCF7EF32E4789800076180D /* UIColor+Extension.swift in Sources */,
