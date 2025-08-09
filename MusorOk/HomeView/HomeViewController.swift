@@ -8,6 +8,9 @@
 import UIKit
 
 final class HomeViewController: UIViewController {
+    
+    private var segmentedHeightConstraint: NSLayoutConstraint!
+    private var isAnimating = false
 
     private let segmented: UISegmentedControl = {
         let control = UISegmentedControl(items: ["Бытовой", "Строительный", "Клининг"])
@@ -15,9 +18,11 @@ final class HomeViewController: UIViewController {
         control.translatesAutoresizingMaskIntoConstraints = false
         control.selectedSegmentTintColor = .brandGreen
         control.setTitleTextAttributes([.foregroundColor: UIColor.white,
-                                        .font: UIFont.systemFont(ofSize: 14, weight: .semibold)], for: .selected)
-        control.setTitleTextAttributes([.foregroundColor: UIColor.secondaryLabel,
-                                        .font: UIFont.systemFont(ofSize: 14, weight: .regular)], for: .normal)
+                                        .font: UIFont.systemFont(ofSize: 15, weight: .semibold)], for: .selected)
+        control.setTitleTextAttributes([
+            .foregroundColor: UIColor.label.withAlphaComponent(0.85),
+            .font: UIFont.systemFont(ofSize: 15, weight: .medium)
+        ], for: .normal)
         return control
     }()
 
@@ -43,21 +48,46 @@ final class HomeViewController: UIViewController {
 
         setupLayout()
         segmented.addTarget(self, action: #selector(segmentChanged), for: .valueChanged)
-
-        // стартовый экран
+        
+        // свайпы по контейнеру
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
+        swipeLeft.direction = .left
+        containerView.addGestureRecognizer(swipeLeft)
+        
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
+        swipeRight.direction = .right
+        containerView.addGestureRecognizer(swipeRight)
+        
         displayChild(at: 0)
+        
+        
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // опционально: скруглить под большую высоту (красиво как «пилюля»)
+        segmented.layer.cornerRadius = 8
+        segmented.layer.masksToBounds = true
     }
 
     private func setupLayout() {
         view.addSubview(segmented)
         view.addSubview(containerView)
-
+        
         let guide = view.safeAreaLayoutGuide
         NSLayoutConstraint.activate([
             segmented.topAnchor.constraint(equalTo: guide.topAnchor, constant: 12),
             segmented.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
-            segmented.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
-
+            segmented.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16)
+        ])
+        
+        // 👇 высота сегмента на +10pt от базовой
+        segmentedHeightConstraint = segmented.heightAnchor.constraint(
+            equalToConstant: segmented.intrinsicContentSize.height + 10
+        )
+        segmentedHeightConstraint.isActive = true
+        
+        NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: segmented.bottomAnchor, constant: 16),
             containerView.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -16),
@@ -66,7 +96,19 @@ final class HomeViewController: UIViewController {
     }
 
     @objc private func segmentChanged() {
-        displayChild(at: segmented.selectedSegmentIndex)
+        let to = segmented.selectedSegmentIndex
+        let from = currentChildIndex
+        guard to != from else { return }
+        displayChildAnimated(from: from, to: to, swipeLeft: to > from)
+    }
+    
+    @objc private func handleSwipe(_ g: UISwipeGestureRecognizer) {
+        let dir = g.direction
+        let next = currentChildIndex + (dir == .left ? 1 : -1)
+        guard next >= 0, next < childControllers.count else { return }
+        let from = currentChildIndex
+        segmented.selectedSegmentIndex = next
+        displayChildAnimated(from: from, to: next, swipeLeft: dir == .left)
     }
 
     private func displayChild(at index: Int) {
@@ -89,5 +131,44 @@ final class HomeViewController: UIViewController {
         ])
         vc.didMove(toParent: self)
         currentChildIndex = index
+    }
+    
+    private func displayChildAnimated(from: Int, to: Int, swipeLeft: Bool) {
+        guard !isAnimating else { return }
+        isAnimating = true
+
+        let oldVC = children.first
+        let newVC = childControllers[to]
+
+        // добавляем нового ребёнка
+        addChild(newVC)
+        newVC.view.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(newVC.view)
+        NSLayoutConstraint.activate([
+            newVC.view.topAnchor.constraint(equalTo: containerView.topAnchor),
+            newVC.view.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            newVC.view.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            newVC.view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
+        containerView.layoutIfNeeded()
+
+        // слайд-анимация через transform
+        let width = containerView.bounds.width
+        let offset: CGFloat = swipeLeft ? width : -width
+        newVC.view.transform = CGAffineTransform(translationX: offset, y: 0)
+
+        UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut]) {
+            newVC.view.transform = .identity
+            oldVC?.view.transform = CGAffineTransform(translationX: -offset, y: 0)
+        } completion: { _ in
+            oldVC?.willMove(toParent: nil)
+            oldVC?.view.removeFromSuperview()
+            oldVC?.removeFromParent()
+            oldVC?.view.transform = .identity
+
+            newVC.didMove(toParent: self)
+            self.currentChildIndex = to
+            self.isAnimating = false
+        }
     }
 }
