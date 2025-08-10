@@ -59,19 +59,42 @@ final class LoginViewController: UIViewController {
     }
     
     @objc private func loginTapped() {
-        // Подготовим данные
-        let phoneE164 = "+7" + (phoneField.rawText ?? "") // 10 цифр нац. части
-        let password = passwordField.text ?? ""
-        
+        view.endEditing(true)
         loginButton.isEnabled = false
-        
-        // Вызов вашего API. Здесь заглушка успеха:
-        // AuthAPI.login(phone: phoneE164, password: password) { [weak self] result in ... }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
-            
-            self.parent?.view.endEditing(true)
-            (self.parent as? AuthContainerViewController)?.delegate?.authDidSucceed()
+
+        let national10 = phoneField.rawText ?? ""     // 10 цифр после +7
+        let password = passwordField.text ?? ""
+
+        // Простейший лоадер на кнопке
+        let spinner = UIActivityIndicatorView(style: .medium)
+        spinner.startAnimating()
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        loginButton.addSubview(spinner)
+        NSLayoutConstraint.activate([
+            spinner.centerXAnchor.constraint(equalTo: loginButton.centerXAnchor),
+            spinner.centerYAnchor.constraint(equalTo: loginButton.centerYAnchor)
+        ])
+
+        AuthService.login(phoneNational10: national10, password: password) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                spinner.removeFromSuperview()
+                switch result {
+                case .success(let resp):
+                    // сохраняем токен в Keychain и сообщаем приложению, что авторизованы
+                    AuthManager.shared.setToken(resp.token, userId: resp.user)
+                    (self.parent as? AuthContainerViewController)?.delegate?.authDidSucceed()
+
+                case .failure(let err):
+                    self.loginButton.isEnabled = true
+                    let alert = UIAlertController(title: "Ошибка входа",
+                                                  message: err.localizedDescription,
+                                                  preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
         }
     }
+
 }

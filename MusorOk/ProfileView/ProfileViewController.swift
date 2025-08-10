@@ -13,15 +13,28 @@ final class ProfileViewController: UIViewController {
         title = "Профиль"
         view.backgroundColor = .systemBackground
 
-        let l = UILabel()
-        l.text = "Профиль пользователя"
-        l.textAlignment = .center
-        l.translatesAutoresizingMaskIntoConstraints = false
+        let logout = UIButton(type: .system)
+        logout.setTitle("Выйти", for: .normal)
+        logout.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
+        logout.translatesAutoresizingMaskIntoConstraints = false
 
-        view.addSubview(l)
+        view.addSubview(logout)
         NSLayoutConstraint.activate([
-            l.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            l.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            logout.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            logout.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+
+    @objc private func logoutTapped() {
+        AuthManager.shared.logout()
+        // вернём пользователя на вкладку «Заказы» с авторизацией
+        if let tab = self.tabBarController as? RootTabBarController {
+            let auth = AuthContainerViewController()
+            auth.delegate = tab
+            if let nav = tab.viewControllers?[1] as? UINavigationController {
+                nav.setViewControllers([auth], animated: true)
+            }
+            tab.selectedIndex = 1
+        }
     }
 }

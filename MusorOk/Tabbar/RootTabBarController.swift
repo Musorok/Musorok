@@ -34,20 +34,22 @@ final class RootTabBarController: UITabBarController {
                                           selectedImage: UIImage(systemName: "person.crop.circle.fill"))
 
         viewControllers = [home, orders, profile]
+        
+        if AuthManager.shared.isAuthorized {
+            let vc = MyOrdersViewController()
+            if let nav = viewControllers?[1] as? UINavigationController {
+                nav.setViewControllers([vc], animated: false)
+            }
+        }
     }
 }
 
 extension RootTabBarController: AuthFlowDelegate {
     func authDidSucceed() {
-        // Куда ведём после авторизации:
-        let ordersList = OrdersViewController() // твой реальный экран
-
-        // Меняем корень во вкладке «Заказы»
-        if let nav = ordersNav ?? (viewControllers?[1] as? UINavigationController) {
-            nav.setViewControllers([ordersList], animated: true)
+        let vc = MyOrdersViewController()
+        if let nav = viewControllers?[1] as? UINavigationController {
+            nav.setViewControllers([vc], animated: true)
         }
-
-        // Можно сразу переключить пользователя на эту вкладку
         selectedIndex = 1
     }
 }
