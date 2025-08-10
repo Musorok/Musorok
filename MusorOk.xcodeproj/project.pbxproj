@@ -32,6 +32,7 @@
 		7BCF7F122E48AFD00076180D /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F112E48AFD00076180D /* AuthService.swift */; };
 		7BCF7F142E48D9620076180D /* MyOrdersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F132E48D9620076180D /* MyOrdersViewController.swift */; };
 		7BCF7F162E48D9880076180D /* OrdersListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F152E48D9880076180D /* OrdersListViewController.swift */; };
+		7BCF7F182E48DC260076180D /* ProfileContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		7BCF7F112E48AFD00076180D /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		7BCF7F132E48D9620076180D /* MyOrdersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyOrdersViewController.swift; sourceTree = "<group>"; };
 		7BCF7F152E48D9880076180D /* OrdersListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersListViewController.swift; sourceTree = "<group>"; };
+		7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileContainerViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				7BCF7EEF2E4789320076180D /* ProfileViewController.swift */,
+				7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */,
 			);
 			path = ProfileView;
 			sourceTree = "<group>";
@@ -301,6 +304,7 @@
 				7BCF7EE32E4788340076180D /* HomeViewController.swift in Sources */,
 				7BCF7EF32E4789800076180D /* UIColor+Extension.swift in Sources */,
 				7BCF7F0B2E48AF560076180D /* KeychainStorage.swift in Sources */,
+				7BCF7F182E48DC260076180D /* ProfileContainerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

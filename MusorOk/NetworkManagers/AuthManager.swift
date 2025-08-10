@@ -19,12 +19,16 @@ final class AuthManager {
            let id = Int(s) {
             self.userId = id
         }
+        displayName = UserDefaults.standard.string(forKey: Self.nameKey)
     }
 
     static let tokenKey = "jwt_token"
     static let userIdKey = "user_id"
+    static let nameKey  = "user_display_name"
+
     private(set) var token: String?
     private(set) var userId: Int?
+    private(set) var displayName: String?
 
     var isAuthorized: Bool { token != nil }
 
@@ -34,6 +38,11 @@ final class AuthManager {
         KeychainStorage.save(Data(token.utf8), account: Self.tokenKey)
         KeychainStorage.save(Data("\(userId)".utf8), account: Self.userIdKey)
         NotificationCenter.default.post(name: .authStateDidChange, object: nil)
+    }
+
+    func setDisplayName(_ name: String) {
+        displayName = name
+        UserDefaults.standard.set(name, forKey: Self.nameKey)
     }
 
     func logout() {
