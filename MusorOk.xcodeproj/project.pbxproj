@@ -33,6 +33,8 @@
 		7BCF7F142E48D9620076180D /* MyOrdersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F132E48D9620076180D /* MyOrdersViewController.swift */; };
 		7BCF7F162E48D9880076180D /* OrdersListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F152E48D9880076180D /* OrdersListViewController.swift */; };
 		7BCF7F182E48DC260076180D /* ProfileContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */; };
+		7BCF7F1A2E4922750076180D /* CodeConfirmViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F192E4922750076180D /* CodeConfirmViewController.swift */; };
+		7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F1B2E4925E50076180D /* RegistrationExtraInfoViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +65,8 @@
 		7BCF7F132E48D9620076180D /* MyOrdersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyOrdersViewController.swift; sourceTree = "<group>"; };
 		7BCF7F152E48D9880076180D /* OrdersListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersListViewController.swift; sourceTree = "<group>"; };
 		7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileContainerViewController.swift; sourceTree = "<group>"; };
+		7BCF7F192E4922750076180D /* CodeConfirmViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeConfirmViewController.swift; sourceTree = "<group>"; };
+		7BCF7F1B2E4925E50076180D /* RegistrationExtraInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationExtraInfoViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,6 +180,8 @@
 				7BCF7EF52E4789C70076180D /* LoginViewController.swift */,
 				7BCF7EFD2E47D51A0076180D /* RegistrationViewController.swift */,
 				7BCF7EFF2E47D6690076180D /* AuthContainerViewController.swift */,
+				7BCF7F192E4922750076180D /* CodeConfirmViewController.swift */,
+				7BCF7F1B2E4925E50076180D /* RegistrationExtraInfoViewController.swift */,
 				7BCF7F0A2E48AF560076180D /* KeychainStorage.swift */,
 			);
 			path = AuthView;
@@ -283,7 +289,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
+				7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */,
 				7BCF7F162E48D9880076180D /* OrdersListViewController.swift in Sources */,
+				7BCF7F1A2E4922750076180D /* CodeConfirmViewController.swift in Sources */,
 				7BCF7F142E48D9620076180D /* MyOrdersViewController.swift in Sources */,
 				7BCF7EF62E4789C70076180D /* LoginViewController.swift in Sources */,
 				7BCF7EE82E4788BB0076180D /* PrimaryButton.swift in Sources */,

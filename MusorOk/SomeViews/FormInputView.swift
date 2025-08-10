@@ -125,6 +125,11 @@ final class FormInputView: UIView, UITextFieldDelegate {
     }
     @objc private func editingEnded() { updateColors() }
     @objc private func editingBegan() { updateColors() }
+    
+    func setErrorVisible(_ on: Bool) {
+        layer.borderWidth = on ? 1 : 0
+        layer.borderColor = on ? UIColor.systemRed.cgColor : nil
+    }
 
     private func updateColors() {
         let hasText = !(field.text?.isEmpty ?? true)

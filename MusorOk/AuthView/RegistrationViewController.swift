@@ -56,6 +56,7 @@ final class RegistrationViewController: UIViewController {
             layoutWithStacks()
         phoneField.onTextChange = { [weak self] _ in self?.validateForm() }
         checkBox.addTarget(self, action: #selector(validateForm), for: .valueChanged)
+        sendCodeButton.addTarget(self, action: #selector(sendCodeTapped), for: .touchUpInside)
     }
 
     private func layoutWithStacks() {
@@ -94,4 +95,45 @@ final class RegistrationViewController: UIViewController {
         let isValidPhone = PhoneFormatter.isValidKZMobile(nationalDigits: national)
         sendCodeButton.isEnabled = isValidPhone && checkBox.isChecked
     }
+    
+    @objc private func sendCodeTapped() {
+        view.endEditing(true)
+
+        // то, что показываем пользователю
+        let formattedPhone = phoneField.text ?? ""
+        // «чистые» 10 цифр (национальная часть) — пригодится бэку
+        let national10 = phoneField.rawText ?? ""
+
+        // экран ввода кода
+        let vc = CodeConfirmViewController(phone: formattedPhone)
+
+        // отправка повторного кода (потом дернёшь свой эндпоинт)
+        vc.onResend = {
+            // AuthService.sendCode(phoneNational10: national10) { _ in }
+        }
+
+        // верификация 4-значного кода (здесь дергай бэк)
+        vc.onVerify = { [weak self] code in
+            guard let self = self else { return }
+            // AuthService.verifyCode(phoneNational10: national10, code: code) { result in
+            //   switch result {
+            //   case .success(let resp):
+            //       AuthManager.shared.setToken(resp.token, userId: resp.user)
+            //       AuthManager.shared.setDisplayName(/* имя из формы регистрации */)
+            //   case .failure(let err):
+            //       // показать алерт
+            //   }
+            // }
+        }
+
+        // пушим
+        if let nav = self.navigationController {
+            nav.pushViewController(vc, animated: true)
+        } else {
+            // на случай, если это child VC в контейнере
+            (self.parent as? AuthContainerViewController)?
+                .navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+
 }
