@@ -88,10 +88,9 @@ final class CategoryViewController: UIViewController {
     }
 
     @objc private func tap() {
-        let alert = UIAlertController(title: "Ок",
-                                      message: "(\(kind.buttonTitle)) — обработаем действие позже.",
-                                      preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Закрыть", style: .default))
-        present(alert, animated: true)
+        guard kind == .household else { return }
+        let vc = AddressPickerViewController()
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

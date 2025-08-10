@@ -167,6 +167,22 @@ final class FormInputView: UIView, UITextFieldDelegate {
         updateColors()
         return false // уже выставили текст сами
     }
+    
+    func setText(_ text: String) {
+        if isKZPhoneMask {
+            // если инпут телефонный — форматируем как +7 XXX XXX XX XX
+            let digits = PhoneFormatter.onlyDigits(from: text)
+            let formatted = PhoneFormatter.formatKZ(digits: digits)
+            field.text = formatted.text
+            rawValue = formatted.nationalDigits
+        } else {
+            // обычный текст (адрес и т.п.)
+            field.text = text
+            rawValue = text
+        }
+        onTextChange?(field.text ?? "")
+        updateColors()
+    }
 }
 
 // UITextField с паддингами
