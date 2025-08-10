@@ -158,9 +158,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func applyName() {
-        nameLabel.text = (AuthManager.shared.displayName?.isEmpty == false)
-        ? AuthManager.shared.displayName!
-        : "гость"
+        nameLabel.text = AuthManager.shared.displayName ?? "гость"
     }
 
     private func askLogout() {

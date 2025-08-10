@@ -98,41 +98,30 @@ final class RegistrationViewController: UIViewController {
     
     @objc private func sendCodeTapped() {
         view.endEditing(true)
+        sendCodeButton.isEnabled = false   // защита от дабл-тапа
 
-        // то, что показываем пользователю
-        let formattedPhone = phoneField.text ?? ""
-        // «чистые» 10 цифр (национальная часть) — пригодится бэку
-        let national10 = phoneField.rawText ?? ""
+        let formatted  = phoneField.text ?? ""      // "+7 706 …"
+        let national10 = phoneField.rawText ?? ""   // "7064286612"
 
-        // экран ввода кода
-        let vc = CodeConfirmViewController(phone: formattedPhone)
+        let vc = CodeConfirmViewController(phone: formatted, phoneNational10: national10)
 
-        // отправка повторного кода (потом дернёшь свой эндпоинт)
+        // колбэки ЗАДАЁМ ДО пуша
         vc.onResend = {
-            // AuthService.sendCode(phoneNational10: national10) { _ in }
+            // TODO: AuthService.sendCode(phoneNational10: national10) { _ in }
         }
-
-        // верификация 4-значного кода (здесь дергай бэк)
         vc.onVerify = { [weak self] code in
             guard let self = self else { return }
-            // AuthService.verifyCode(phoneNational10: national10, code: code) { result in
-            //   switch result {
-            //   case .success(let resp):
-            //       AuthManager.shared.setToken(resp.token, userId: resp.user)
-            //       AuthManager.shared.setDisplayName(/* имя из формы регистрации */)
-            //   case .failure(let err):
-            //       // показать алерт
-            //   }
-            // }
+            // TODO: дернуть бэк подтверждения кода, при успехе пойдёте дальше
         }
 
-        // пушим
-        if let nav = self.navigationController {
-            nav.pushViewController(vc, animated: true)
-        } else {
-            // на случай, если это child VC в контейнере
-            (self.parent as? AuthContainerViewController)?
-                .navigationController?.pushViewController(vc, animated: true)
+        // пушим ОДИН раз
+        let nav = self.navigationController
+            ?? (self.parent as? AuthContainerViewController)?.navigationController
+        nav?.pushViewController(vc, animated: true)
+
+        // можно вернуть кнопку через 0.5с, если нужно повторно отправлять код
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.sendCodeButton.isEnabled = true
         }
     }
 

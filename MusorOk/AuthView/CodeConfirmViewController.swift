@@ -12,6 +12,7 @@ final class CodeConfirmViewController: UIViewController, UITextFieldDelegate {
     // входные данные
     private let phone: String          // в формате +7 XXX XXX XX XX (или любой текст для заголовка)
     private let digitsCount: Int = 4   // как на скрине — 4 ячейки
+    private let phoneNational10: String
 
     // колбэки, сюда потом подставишь реальные вызовы бэка
     var onVerify: ((String) -> Void)?      // code -> verify (ожидается успешный токен и т.п.)
@@ -70,8 +71,10 @@ final class CodeConfirmViewController: UIViewController, UITextFieldDelegate {
     private var secondsLeft = 30
 
     // MARK: - Init
-    init(phone: String) {
+    
+    init(phone: String, phoneNational10: String) {
         self.phone = phone
+        self.phoneNational10 = phoneNational10
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError() }
@@ -257,7 +260,7 @@ final class CodeConfirmViewController: UIViewController, UITextFieldDelegate {
         spinner.startAnimating()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             spinner.stopAnimating()
-            let vc = RegistrationExtraInfoViewController()
+            let vc = RegistrationExtraInfoViewController(phoneNational10: self.phoneNational10)
             self.navigationController?.pushViewController(vc, animated: true)
         }
     }
@@ -301,7 +304,7 @@ final class CodeConfirmViewController: UIViewController, UITextFieldDelegate {
             spinner.removeFromSuperview()
             self.view.isUserInteractionEnabled = true
 
-            let vc = RegistrationExtraInfoViewController()
+            let vc = RegistrationExtraInfoViewController(phoneNational10: self.phoneNational10)
             self.navigationController?.pushViewController(vc, animated: true)
         }
     }

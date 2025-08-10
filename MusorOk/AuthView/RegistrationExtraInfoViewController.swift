@@ -8,6 +8,8 @@
 import UIKit
 
 final class RegistrationExtraInfoViewController: UIViewController {
+    
+    private let phoneNational10: String
 
     // MARK: UI
     private let backButton: UIButton = {
@@ -49,6 +51,12 @@ final class RegistrationExtraInfoViewController: UIViewController {
         s.translatesAutoresizingMaskIntoConstraints = false
         return s
     }()
+    
+    init(phoneNational10: String) {
+        self.phoneNational10 = phoneNational10
+        super.init(nibName: nil, bundle: nil)
+    }
+    required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,7 +124,7 @@ final class RegistrationExtraInfoViewController: UIViewController {
         registerButton.isEnabled = nameOK && passOK && mailOK
 
         // подсветка ошибок (мягко)
-        repeatPasswordField.setErrorVisible(p1.isEmpty ? false : (p1 != p2))
+        repeatPasswordField.setErrorVisible(!p1.isEmpty && !p2.isEmpty && p1 != p2)
     }
 
     private func isValidEmail(_ s: String) -> Bool {
@@ -130,21 +138,46 @@ final class RegistrationExtraInfoViewController: UIViewController {
         registerButton.isEnabled = false
         loader.startAnimating()
 
-        // тут будет вызов бэка регистрации; пока имитируем
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.loader.stopAnimating()
+        let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let email = emailField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let password = passwordField.text ?? ""
 
-            // сохраним имя для приветствия
-            let name = self.nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if !name.isEmpty { AuthManager.shared.setDisplayName(name) }
+        AuthService.register(email: email,
+                             name: name,
+                             password: password,
+                             phoneNational10: phoneNational10) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.loader.stopAnimating()
 
-            // при реальном ответе здесь же вызывается setToken(...), а дальше уже таббар переключится сам
-            let alert = UIAlertController(title: "Готово", message: "Регистрация завершена.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Ок", style: .default) { _ in
-                self.navigationController?.popToRootViewController(animated: true)
-            })
-            self.present(alert, animated: true)
+                switch result {
+                case .success(let resp):
+                    guard let token = resp.token, let userId = resp.user else {
+                        self.showError("Некорректный ответ сервера"); self.registerButton.isEnabled = true; return
+                    }
+
+                    // ✅ сохраняем имя для приветствия
+                    let name = self.nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    if !name.isEmpty { AuthManager.shared.setDisplayName(name) }
+
+                    // сохраняем токен
+                    AuthManager.shared.setToken(token, userId: userId)
+
+                    // вернёмся к корню; таббар сам переключит «Заказы», а «Профиль» прочитает имя
+                    self.navigationController?.popToRootViewController(animated: true)
+
+                case .failure(let err):
+                    self.showError(err.localizedDescription)
+                    self.registerButton.isEnabled = true
+                }
+            }
         }
+    }
+
+    private func showError(_ msg: String) {
+        let a = UIAlertController(title: "Ошибка", message: msg, preferredStyle: .alert)
+        a.addAction(UIAlertAction(title: "OK", style: .default))
+        present(a, animated: true)
     }
 }
 
