@@ -7,17 +7,6 @@
 
 import UIKit
 
-struct AddressDetails {
-    let addressLine: String
-    let apartment: String
-    let floor: String
-    let entrance: String
-    let intercom: String?
-    let noCall: Bool
-    let saveAddress: Bool
-    let addressName: String?
-}
-
 final class AddressDetailsViewController: UIViewController {
 
     // входные данные

@@ -254,7 +254,17 @@ final class TrashQuantityViewController: UIViewController {
     }
 
     @objc private func nextTapped() {
-        // TODO: переход к оформлению/подтверждению заказа
-        navigationController?.popToRootViewController(animated: true)
+        guard count > 0 else { return }
+        let vc = OrderDetailsViewController(details: details, bagsCount: count, pricePerBagKZT: 150)
+        vc.onEditAddress = { [weak self] in
+            self?.navigationController?.popToViewControllerOfType(AddressPickerViewController.self)
+        }
+        vc.onEditBags = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
+        vc.onProceedToPay = { [weak self] scheduledAt in
+            // создать заказ…
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
