@@ -251,6 +251,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             // print("ORDER:", details)
         }
         let nav = navigationController ?? (parent?.navigationController)
+        navigationItem.backButtonDisplayMode = .minimal
         nav?.pushViewController(vc, animated: true)
     }
     

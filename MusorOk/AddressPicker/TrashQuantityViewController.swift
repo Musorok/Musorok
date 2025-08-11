@@ -265,6 +265,7 @@ final class TrashQuantityViewController: UIViewController {
         vc.onProceedToPay = { [weak self] scheduledAt in
             // создать заказ…
         }
+        navigationItem.backButtonDisplayMode = .minimal
         navigationController?.pushViewController(vc, animated: true)
     }
 }

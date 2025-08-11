@@ -242,6 +242,7 @@ final class AddressDetailsViewController: UIViewController {
             addressName: saveAddressSwitch.isOn ? (addressNameField.text ?? "") : nil
         )
         let vc = TrashQuantityViewController(details: payload)
+        navigationItem.backButtonDisplayMode = .minimal
         navigationController?.pushViewController(vc, animated: true)
     }
 }
