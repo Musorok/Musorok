@@ -242,7 +242,7 @@ final class AddressDetailsViewController: UIViewController {
 
     @objc private func submit() {
         guard submitButton.isEnabled else { return }
-        let details = AddressDetails(
+        let payload = AddressDetails(
             addressLine: addressLine,
             apartment: apartmentField.text ?? "",
             floor: floorField.text ?? "",
@@ -252,9 +252,8 @@ final class AddressDetailsViewController: UIViewController {
             saveAddress: saveAddressSwitch.isOn,
             addressName: saveAddressSwitch.isOn ? (addressNameField.text ?? "") : nil
         )
-        onSubmit?(details)
-        // пока просто назад
-        navigationController?.popViewController(animated: true)
+        let vc = TrashQuantityViewController(details: payload)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
