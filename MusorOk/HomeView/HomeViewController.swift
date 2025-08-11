@@ -42,9 +42,9 @@ final class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Мусорок"
+        navigationItem.largeTitleDisplayMode = .never   // не используем large title на этом экране
+        setupLogoTitle()
         view.backgroundColor = .systemBackground
-        navigationController?.navigationBar.prefersLargeTitles = true
 
         setupLayout()
         segmented.addTarget(self, action: #selector(segmentChanged), for: .valueChanged)
@@ -170,5 +170,31 @@ final class HomeViewController: UIViewController {
             self.currentChildIndex = to
             self.isAnimating = false
         }
+    }
+    
+    private func setupLogoTitle() {
+        // берём картинку из Assets (название: musorok)
+        let image = UIImage(named: "musorok")?.withRenderingMode(.alwaysOriginal)
+
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+
+        // контейнер, чтобы зафиксировать размер в навбаре
+        let container = UIView(frame: .zero)
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(imageView)
+
+        NSLayoutConstraint.activate([
+            imageView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            imageView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            imageView.heightAnchor.constraint(equalToConstant: 28),
+            imageView.widthAnchor.constraint(lessThanOrEqualToConstant: 140),
+
+            container.heightAnchor.constraint(equalToConstant: 32),
+            container.widthAnchor.constraint(greaterThanOrEqualTo: imageView.widthAnchor)
+        ])
+
+        navigationItem.titleView = container
     }
 }
