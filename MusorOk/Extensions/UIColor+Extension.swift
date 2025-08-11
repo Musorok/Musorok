@@ -8,5 +8,8 @@
 import UIKit
 
 extension UIColor {
-    static let brandGreen = UIColor(red: 38/255, green: 168/255, blue: 107/255, alpha: 1) // близко к скрину
+    static let brandGreen  = UIColor(red: 38/255,  green: 168/255, blue: 107/255, alpha: 1) // бытовой
+    static let brandOrange = UIColor(red: 255/255, green: 159/255, blue:  10/255, alpha: 1) // строительный
+    static let brandTeal   = UIColor(red:  48/255, green: 176/255, blue: 199/255, alpha: 1) // клининг
 }
+
