@@ -13,6 +13,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
     // Карта как IUO, чтобы обращаться без "?"
     private var ymapView: YMKMapView!
+    private var didKickoffLocation = false
 
     private var userLocationLayer: YMKUserLocationLayer!
     private let locationManager = CLLocationManager()
@@ -91,19 +92,14 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         locateButton.addTarget(self, action: #selector(centerOnUser), for: .touchUpInside)
         confirmButton.addTarget(self, action: #selector(confirm), for: .touchUpInside)
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        // Один раз пробуем центрироваться при первом показе
-        centerOnUser()
-    }
 
     // MARK: - Map / Search
     private func setupMap() {
         // 1) Карта
         ymapView = YMKMapView(frame: .zero)
         ymapView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(ymapView)
+        ymapView.isOpaque = true
+        ymapView.backgroundColor = .systemBackground
 
         // 2) Жесты
         let map = ymapView.mapWindow.map
@@ -184,6 +180,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             confirmButton.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
             confirmButton.heightAnchor.constraint(equalToConstant: 56)
         ])
+        view.layoutIfNeeded()
     }
 
     // MARK: - Location
@@ -199,9 +196,13 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
-        print("CLLocation:", loc.coordinate.latitude, loc.coordinate.longitude)
         moveCamera(to: loc.coordinate, animated: false)
         reverseGeocodeYandex(YMKPoint(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude))
+
+        if !didKickoffLocation {
+            didKickoffLocation = true
+            centerOnUser()
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -251,6 +252,13 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         }
         let nav = navigationController ?? (parent?.navigationController)
         nav?.pushViewController(vc, animated: true)
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedWhenInUse, !didKickoffLocation {
+            didKickoffLocation = true
+            centerOnUser()
+        }
     }
 
     // MARK: - Helpers
