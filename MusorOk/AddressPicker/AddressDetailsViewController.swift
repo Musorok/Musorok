@@ -75,7 +75,7 @@ final class AddressDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-
+        navigationController?.navigationBar.tintColor = .label
         setupLayout()
         setupBehavior()
         titleLabel.text = addressLine

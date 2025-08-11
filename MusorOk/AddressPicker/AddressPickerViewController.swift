@@ -81,6 +81,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        navigationController?.navigationBar.tintColor = .label
 
         setupMap()       // создать карту и слои
         setupLayout()    // констрейнты и панель
