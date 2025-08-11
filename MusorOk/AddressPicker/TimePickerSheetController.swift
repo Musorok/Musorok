@@ -16,9 +16,11 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
     private var bottomC: NSLayoutConstraint!
 
     private var dates: [Date] = []
-    private var times: [DateComponents] = [] // только часы/минуты
+    private var times: [DateComponents] = []
     private var selectedDayIndex = 0
     private var selectedTimeIndex = 0
+
+    private var didSetInsets = false
 
     private lazy var dfDay: DateFormatter = {
         let f = DateFormatter()
@@ -43,16 +45,14 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
         presentAnimate()
     }
 
+    // 7 дней с сегодня + слоты 09:00...21:00
     private func buildData() {
-        // 7 дней начиная с сегодня
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
         dates = (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: today) }
-
-        // слоты 09:00...21:00
         times = (9...21).map { DateComponents(hour: $0, minute: 0) }
 
-        // Предвыбор: ближайший слот ≥ текущего времени
+        // выберем ближайший доступный слот на сегодня
         let now = Date()
         if let todayIdx = dates.firstIndex(where: { cal.isDate($0, inSameDayAs: now) }) {
             selectedDayIndex = todayIdx
@@ -68,6 +68,7 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
     private func buildUI() {
         view.backgroundColor = .clear
 
+        // dim
         dimView.backgroundColor = UIColor.black.withAlphaComponent(0.0)
         dimView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(dimView)
@@ -79,6 +80,7 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
         ])
         dimView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissAnimate)))
 
+        // container
         container.translatesAutoresizingMaskIntoConstraints = false
         container.backgroundColor = .systemBackground
         container.layer.cornerRadius = 24
@@ -91,6 +93,7 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
             bottomC
         ])
 
+        // заголовки
         let title = UILabel()
         title.text = "Выберите время"
         title.font = .systemFont(ofSize: 28, weight: .bold)
@@ -101,21 +104,21 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
         subtitle.textColor = .secondaryLabel
         subtitle.font = .systemFont(ofSize: 16)
 
-        let datesLayout = UICollectionViewFlowLayout()
+        // даты
+        let datesLayout = CenterSnappingFlowLayout()
         datesLayout.scrollDirection = .horizontal
         datesLayout.minimumLineSpacing = 12
-        datesLayout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         daysCV = UICollectionView(frame: .zero, collectionViewLayout: datesLayout)
         daysCV.backgroundColor = .clear
         daysCV.showsHorizontalScrollIndicator = false
-        daysCV.decelerationRate = .fast
+        daysCV.decelerationRate = .normal
         daysCV.register(PillCell.self, forCellWithReuseIdentifier: "day")
         daysCV.delegate = self; daysCV.dataSource = self
 
-        let timesLayout = UICollectionViewFlowLayout()
+        // время
+        let timesLayout = CenterSnappingFlowLayout()
         timesLayout.scrollDirection = .horizontal
         timesLayout.minimumLineSpacing = 12
-        timesLayout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         timesCV = UICollectionView(frame: .zero, collectionViewLayout: timesLayout)
         timesCV.backgroundColor = .clear
         timesCV.showsHorizontalScrollIndicator = false
@@ -123,16 +126,15 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
         timesCV.register(PillCell.self, forCellWithReuseIdentifier: "time")
         timesCV.delegate = self; timesCV.dataSource = self
 
+        // кнопка
         let confirm = PrimaryButton()
         confirm.setTitle("Указать", for: .normal)
         confirm.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
 
         // layout
-        for v in [title, subtitle, daysCV, timesCV, confirm] as [UIView?] {
-            if let v = v {
-                v.translatesAutoresizingMaskIntoConstraints = false
-                container.addSubview(v)
-            }
+        for v in [title, subtitle, daysCV!, timesCV!, confirm] as [UIView] {
+            v.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(v)
         }
         NSLayoutConstraint.activate([
             title.topAnchor.constraint(equalTo: container.topAnchor, constant: 18),
@@ -161,6 +163,34 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
         ])
     }
 
+    // инсет для центрирования первого/последнего, + прокрутка к выбранному
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard !didSetInsets else { return }
+
+        let dayItemW = daysCV.bounds.width * 0.75
+        let daySide  = max(0, (daysCV.bounds.width - dayItemW) / 2)
+        daysCV.contentInset = UIEdgeInsets(top: 0, left: daySide, bottom: 0, right: daySide)
+
+        let timeItemW: CGFloat = 96
+        let timeSide  = max(0, (timesCV.bounds.width - timeItemW) / 2)
+        timesCV.contentInset = UIEdgeInsets(top: 0, left: timeSide, bottom: 0, right: timeSide)
+
+        didSetInsets = true
+        scrollToSelected(animated: false)
+    }
+
+    private func scrollToSelected(animated: Bool) {
+        if selectedDayIndex < dates.count {
+            daysCV.scrollToItem(at: IndexPath(item: selectedDayIndex, section: 0),
+                                at: .centeredHorizontally, animated: animated)
+        }
+        if selectedTimeIndex < times.count {
+            timesCV.scrollToItem(at: IndexPath(item: selectedTimeIndex, section: 0),
+                                 at: .centeredHorizontally, animated: animated)
+        }
+    }
+
     // MARK: animation
     private func presentAnimate() {
         view.layoutIfNeeded()
@@ -179,6 +209,7 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
             self.dismiss(animated: false)
         }
     }
+
     @objc private func confirmTapped() {
         let cal = Calendar.current
         let day = dates[selectedDayIndex]
@@ -190,65 +221,43 @@ final class TimePickerSheetController: UIViewController, UICollectionViewDelegat
 }
 
 // MARK: - CollectionView
-extension TimePickerSheetController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+extension TimePickerSheetController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
 
     func collectionView(_ cv: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        cv == daysCV ? dates.count : times.count
+        cv === daysCV ? dates.count : times.count
     }
 
     func collectionView(_ cv: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = cv.dequeueReusableCell(withReuseIdentifier: cv == daysCV ? "day" : "time", for: indexPath) as! PillCell
-        if cv == daysCV {
-            let d = dates[indexPath.item]
-            cell.title = dfDay.string(from: d)
+        let id = (cv === daysCV) ? "day" : "time"
+        let cell = cv.dequeueReusableCell(withReuseIdentifier: id, for: indexPath) as! PillCell
+        if cv === daysCV {
+            cell.title = dfDay.string(from: dates[indexPath.item])
             cell.isOn = (indexPath.item == selectedDayIndex)
         } else {
             let comps = times[indexPath.item]
-            let today = Calendar.current.date(from: comps) ?? Date()
-            cell.title = dfTime.string(from: today)
+            let sample = Calendar.current.date(from: comps) ?? Date()
+            cell.title = dfTime.string(from: sample)
             cell.isOn = (indexPath.item == selectedTimeIndex)
         }
         return cell
     }
 
     func collectionView(_ cv: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if cv == daysCV {
+        if cv === daysCV {
             selectedDayIndex = indexPath.item
             daysCV.reloadData()
+            daysCV.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
         } else {
             selectedTimeIndex = indexPath.item
             timesCV.reloadData()
+            timesCV.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
         }
     }
 
     // размеры «пилюлек»
     func collectionView(_ cv: UICollectionView, layout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let w = cv == daysCV ? cv.bounds.width * 0.75 : 96
+        let w = (cv === daysCV) ? (cv.bounds.width * 0.75) : 96
         return CGSize(width: w, height: 44)
     }
-}
-
-/// Чиповая ячейка
-final class PillCell: UICollectionViewCell {
-    private let label = UILabel()
-    var title: String = "" { didSet { label.text = title } }
-    var isOn: Bool = false { didSet { contentView.backgroundColor = isOn ? UIColor.systemGray5 : UIColor.systemGray6 } }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        label.font = .systemFont(ofSize: 17, weight: .semibold)
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        contentView.layer.cornerRadius = 22
-        contentView.backgroundColor = .systemGray6
-        contentView.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-            label.topAnchor.constraint(equalTo: contentView.topAnchor),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ])
-    }
-    required init?(coder: NSCoder) { fatalError() }
 }
 

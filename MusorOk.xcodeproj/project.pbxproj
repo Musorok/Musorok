@@ -13,6 +13,7 @@
 		7B2F6FAC2E4A65DA00F4A118 /* TimePickerSheetController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FAB2E4A65DA00F4A118 /* TimePickerSheetController.swift */; };
 		7B2F6FAE2E4A6A0C00F4A118 /* AddressDetailsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FAD2E4A6A0C00F4A118 /* AddressDetailsModel.swift */; };
 		7B2F6FB12E4A789700F4A118 /* UINavigationController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB02E4A789700F4A118 /* UINavigationController+Extension.swift */; };
+		7B2F6FB32E4A80B600F4A118 /* CenterSnappingFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */; };
 		7BCF7ECB2E4787040076180D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECA2E4787040076180D /* AppDelegate.swift */; };
 		7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECC2E4787040076180D /* SceneDelegate.swift */; };
 		7BCF7ED42E4787050076180D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BCF7ED32E4787050076180D /* Assets.xcassets */; };
@@ -51,6 +52,7 @@
 		7B2F6FAB2E4A65DA00F4A118 /* TimePickerSheetController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimePickerSheetController.swift; sourceTree = "<group>"; };
 		7B2F6FAD2E4A6A0C00F4A118 /* AddressDetailsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressDetailsModel.swift; sourceTree = "<group>"; };
 		7B2F6FB02E4A789700F4A118 /* UINavigationController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+Extension.swift"; sourceTree = "<group>"; };
+		7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterSnappingFlowLayout.swift; sourceTree = "<group>"; };
 		7BCF7EC72E4787040076180D /* MusorOk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusorOk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BCF7ECA2E4787040076180D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7BCF7ECC2E4787040076180D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				7B2F6FA72E4A658D00F4A118 /* OrderDetailsViewController.swift */,
 				7B2F6FA92E4A65B200F4A118 /* RadioRow.swift */,
 				7B2F6FAB2E4A65DA00F4A118 /* TimePickerSheetController.swift */,
+				7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */,
 			);
 			path = AddressPicker;
 			sourceTree = "<group>";
@@ -310,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7BCF7F242E49652A0076180D /* AddressDetailsViewController.swift in Sources */,
+				7B2F6FB32E4A80B600F4A118 /* CenterSnappingFlowLayout.swift in Sources */,
 				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
 				7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */,
 				7B2F6FA42E4A463900F4A118 /* TrashQuantityViewController.swift in Sources */,
