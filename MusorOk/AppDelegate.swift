@@ -14,10 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-//        YMKMapKit.setApiKey("049a4f37-0c85-47ef-8582-53afce109e31")
-//        let mapkit = YMKMapKit.sharedInstance()
-//        mapkit.onStart()
-        YMKMapKit.setApiKey("<049a4f37-0c85-47ef-8582-53afce109e31>")
+        YMKMapKit.setApiKey("049a4f37-0c85-47ef-8582-53afce109e31")
         YMKMapKit.setLocale("ru_RU") // необязательно
         let mapkit = YMKMapKit.sharedInstance()
         mapkit.onStart()

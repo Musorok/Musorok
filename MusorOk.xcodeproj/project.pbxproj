@@ -35,6 +35,7 @@
 		7BCF7F182E48DC260076180D /* ProfileContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */; };
 		7BCF7F1A2E4922750076180D /* CodeConfirmViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F192E4922750076180D /* CodeConfirmViewController.swift */; };
 		7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F1B2E4925E50076180D /* RegistrationExtraInfoViewController.swift */; };
+		7BCF7F242E49652A0076180D /* AddressDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7F232E49652A0076180D /* AddressDetailsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,6 +68,7 @@
 		7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileContainerViewController.swift; sourceTree = "<group>"; };
 		7BCF7F192E4922750076180D /* CodeConfirmViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeConfirmViewController.swift; sourceTree = "<group>"; };
 		7BCF7F1B2E4925E50076180D /* RegistrationExtraInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationExtraInfoViewController.swift; sourceTree = "<group>"; };
+		7BCF7F232E49652A0076180D /* AddressDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressDetailsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				7BCF7F042E47FA9A0076180D /* AddressPickerViewController.swift */,
+				7BCF7F232E49652A0076180D /* AddressDetailsViewController.swift */,
 			);
 			path = AddressPicker;
 			sourceTree = "<group>";
@@ -288,6 +291,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BCF7F242E49652A0076180D /* AddressDetailsViewController.swift in Sources */,
 				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
 				7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */,
 				7BCF7F162E48D9880076180D /* OrdersListViewController.swift in Sources */,

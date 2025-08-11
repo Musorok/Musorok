@@ -90,6 +90,12 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         locateButton.addTarget(self, action: #selector(centerOnUser), for: .touchUpInside)
         confirmButton.addTarget(self, action: #selector(confirm), for: .touchUpInside)
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Один раз пробуем центрироваться при первом показе
+        centerOnUser()
+    }
 
     // MARK: - Map / Search
     private func setupMap() {
@@ -122,7 +128,8 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
     // MARK: - Layout
     private func setupLayout() {
-        // Карта на весь экран
+        // карта
+        view.addSubview(ymapView)
         NSLayoutConstraint.activate([
             ymapView.topAnchor.constraint(equalTo: view.topAnchor),
             ymapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -130,44 +137,39 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             ymapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        // Центральный пин (визуально показывает выбранную точку)
+        // ❗️СНАЧАЛА добавляем bottomPanel
+        bottomPanel.translatesAutoresizingMaskIntoConstraints = false
+        bottomPanel.backgroundColor = .systemBackground
+        bottomPanel.layer.cornerRadius = 24
+        bottomPanel.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.addSubview(bottomPanel)
+        NSLayoutConstraint.activate([
+            bottomPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor), // ← БЕЗ сдвига
+            bottomPanel.heightAnchor.constraint(equalToConstant: 240)        // ← было 220, +5 pt
+        ])
+
+        view.addSubview(locateButton)
+        NSLayoutConstraint.activate([
+            locateButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            // ✅ теперь можно привязать к панели
+            locateButton.bottomAnchor.constraint(equalTo: bottomPanel.topAnchor, constant: -12)
+        ])
+        view.bringSubviewToFront(locateButton) // чтобы кнопка была поверх панели
+
+        // пин в центре
         view.addSubview(centerPin)
         NSLayoutConstraint.activate([
             centerPin.centerXAnchor.constraint(equalTo: ymapView.centerXAnchor),
             centerPin.centerYAnchor.constraint(equalTo: ymapView.centerYAnchor, constant: -12)
         ])
 
-        // Кнопка Назад
-        view.addSubview(backButton)
-        NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-            backButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 12)
-        ])
-
-        // FAB геолокации
-        view.addSubview(locateButton)
-        NSLayoutConstraint.activate([
-            locateButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            locateButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -120)
-        ])
-
-        // Нижняя панель
-        bottomPanel.translatesAutoresizingMaskIntoConstraints = false
-        bottomPanel.backgroundColor = .systemBackground
-        bottomPanel.layer.cornerRadius = 24
-        bottomPanel.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        view.addSubview(bottomPanel)
-
+        // контент панели
         bottomPanel.addSubview(titleLabel)
         bottomPanel.addSubview(addressField)
         bottomPanel.addSubview(confirmButton)
-
         NSLayoutConstraint.activate([
-            bottomPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bottomPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bottomPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            bottomPanel.heightAnchor.constraint(equalToConstant: 220),
-
             titleLabel.topAnchor.constraint(equalTo: bottomPanel.topAnchor, constant: 18),
             titleLabel.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
             titleLabel.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
@@ -186,24 +188,17 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     // MARK: - Location
     private func setupLocation() {
         locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 10
         if CLLocationManager.authorizationStatus() == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
         }
         locationManager.requestLocation()
-
-        #if targetEnvironment(simulator)
-        // симулятор: подставим дефолт (Алматы центр) через небольшую задержку
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
-            let almaty = CLLocationCoordinate2D(latitude: 43.238949, longitude: 76.889709)
-            self.moveCamera(to: almaty, animated: false)
-            self.reverseGeocodeYandex(YMKPoint(latitude: almaty.latitude, longitude: almaty.longitude))
-        }
-        #endif
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
+        print("CLLocation:", loc.coordinate.latitude, loc.coordinate.longitude)
         moveCamera(to: loc.coordinate, animated: false)
         reverseGeocodeYandex(YMKPoint(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude))
     }
@@ -219,6 +214,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
                                  finished: Bool) {
         if finished {
             let p = cameraPosition.target
+            print("Camera finished at:", p.latitude, p.longitude)
             reverseGeocodeYandex(YMKPoint(latitude: p.latitude, longitude: p.longitude))
         }
     }
@@ -227,6 +223,15 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     @objc private func didTapBack() { dismiss(animated: true) }
 
     @objc private func centerOnUser() {
+        // 1) Попытка от Яндекс-слоя
+        if let cam = userLocationLayer.cameraPosition() {
+            let anim = YMKAnimation(type: .smooth, duration: 0.3)
+            ymapView.mapWindow.map.move(with: cam, animation: anim, cameraCallback: nil)
+            reverseGeocodeYandex(cam.target)
+            return
+        }
+
+        // 2) Fallback: CoreLocation
         if let loc = locationManager.location {
             let c = loc.coordinate
             moveCamera(to: c, animated: true)
@@ -237,9 +242,14 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     }
 
     @objc private func confirm() {
-        let p = ymapView.mapWindow.map.cameraPosition.target
-        print("CONFIRM: \(addressField.text ?? "") @ \(p.latitude), \(p.longitude)")
-        // TODO: верни адрес и координаты наверх через делегат/closure
+        let line = addressField.text ?? ""
+        let vc = AddressDetailsViewController(addressLine: line)
+        vc.onSubmit = { details in
+            // здесь потом вызовешь создание заказа
+            // print("ORDER:", details)
+        }
+        let nav = navigationController ?? (parent?.navigationController)
+        nav?.pushViewController(vc, animated: true)
     }
 
     // MARK: - Helpers
@@ -295,9 +305,6 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
                 self.addressField.setText("Адрес не определён")
                 self.confirmButton.isEnabled = false
             }
-
-            self.addressField.setText(addressText ?? "Адрес не определён")
-            self.confirmButton.isEnabled = !(addressText ?? "").isEmpty
         }
     }
 }
