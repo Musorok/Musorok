@@ -15,6 +15,7 @@
 		7B2F6FB12E4A789700F4A118 /* UINavigationController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB02E4A789700F4A118 /* UINavigationController+Extension.swift */; };
 		7B2F6FB32E4A80B600F4A118 /* CenterSnappingFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */; };
 		7B2F6FB52E4A984500F4A118 /* ChipsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB42E4A984500F4A118 /* ChipsBarView.swift */; };
+		7B2F6FB72E4AB50C00F4A118 /* ProfileEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB62E4AB50C00F4A118 /* ProfileEditViewController.swift */; };
 		7BCF7ECB2E4787040076180D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECA2E4787040076180D /* AppDelegate.swift */; };
 		7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECC2E4787040076180D /* SceneDelegate.swift */; };
 		7BCF7ED42E4787050076180D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BCF7ED32E4787050076180D /* Assets.xcassets */; };
@@ -55,6 +56,7 @@
 		7B2F6FB02E4A789700F4A118 /* UINavigationController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+Extension.swift"; sourceTree = "<group>"; };
 		7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterSnappingFlowLayout.swift; sourceTree = "<group>"; };
 		7B2F6FB42E4A984500F4A118 /* ChipsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipsBarView.swift; sourceTree = "<group>"; };
+		7B2F6FB62E4AB50C00F4A118 /* ProfileEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditViewController.swift; sourceTree = "<group>"; };
 		7BCF7EC72E4787040076180D /* MusorOk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusorOk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BCF7ECA2E4787040076180D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7BCF7ECC2E4787040076180D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 			children = (
 				7BCF7EEF2E4789320076180D /* ProfileViewController.swift */,
 				7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */,
+				7B2F6FB62E4AB50C00F4A118 /* ProfileEditViewController.swift */,
 			);
 			path = ProfileView;
 			sourceTree = "<group>";
@@ -316,6 +319,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7BCF7F242E49652A0076180D /* AddressDetailsViewController.swift in Sources */,
+				7B2F6FB72E4AB50C00F4A118 /* ProfileEditViewController.swift in Sources */,
 				7B2F6FB32E4A80B600F4A118 /* CenterSnappingFlowLayout.swift in Sources */,
 				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
 				7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */,

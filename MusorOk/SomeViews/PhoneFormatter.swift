@@ -44,4 +44,21 @@ struct PhoneFormatter {
         let pfx = String(nationalDigits.prefix(3))
         return kzMobilePrefixes.contains(pfx)
     }
+    
+    static func formatNational10ToKZMasked(_ ten: String) -> String {
+        let d = onlyDigits(from: ten)
+        let arr = Array(d.prefix(10))          // только первые 10
+        
+        func slice(_ start: Int, _ end: Int) -> String {
+            guard start < arr.count else { return "" }
+            return String(arr[start..<min(end, arr.count)])
+        }
+        
+        var res = "+7"
+        if !slice(0, 3).isEmpty  { res += " " + slice(0, 3) }
+        if !slice(3, 6).isEmpty  { res += " " + slice(3, 6) }
+        if !slice(6, 8).isEmpty  { res += " " + slice(6, 8) }
+        if !slice(8,10).isEmpty  { res += " " + slice(8,10) }
+        return res
+    }
 }

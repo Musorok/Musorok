@@ -9,6 +9,10 @@ import Foundation
 
 final class AuthManager {
     static let shared = AuthManager()
+    static let emailKey     = "user_email"
+    static let phone10Key   = "user_phone_10"
+    private(set) var email: String?
+    private(set) var phoneNational10: String?
     private init() {
         if let data = KeychainStorage.read(account: Self.tokenKey),
            let token = String(data: data, encoding: .utf8) {
@@ -20,6 +24,8 @@ final class AuthManager {
             self.userId = id
         }
         displayName = UserDefaults.standard.string(forKey: Self.nameKey)
+        email = UserDefaults.standard.string(forKey: Self.emailKey)
+        phoneNational10 = UserDefaults.standard.string(forKey: Self.phone10Key)
     }
 
     static let tokenKey = "jwt_token"
@@ -43,6 +49,16 @@ final class AuthManager {
     func setDisplayName(_ name: String) {
         displayName = name
         UserDefaults.standard.set(name, forKey: Self.nameKey)
+    }
+    
+    func setEmail(_ email: String) {
+        self.email = email
+        UserDefaults.standard.set(email, forKey: Self.emailKey)
+    }
+    
+    func setPhoneNational10(_ phone: String) {
+        self.phoneNational10 = phone
+        UserDefaults.standard.set(phone, forKey: Self.phone10Key)
     }
 
     func logout() {

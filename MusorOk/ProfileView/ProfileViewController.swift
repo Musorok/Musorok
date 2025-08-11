@@ -77,8 +77,10 @@ final class ProfileViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
 
-        addRow(icon: "person.crop.circle", title: "Мои данные") {
-            // TODO: push MyDataVC()
+        addRow(icon: "person.crop.circle", title: "Мои данные") { [weak self] in
+            let vc = ProfileEditViewController()
+            self?.navigationItem.backButtonDisplayMode = .minimal
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
         addRow(icon: "mappin.and.ellipse", title: "Мои адреса") {
             // TODO: push AddressesVC()

@@ -83,6 +83,8 @@ final class LoginViewController: UIViewController {
                 case .success(let resp):
                     // сохраняем токен в Keychain и сообщаем приложению, что авторизованы
                     AuthManager.shared.setToken(resp.token, userId: resp.user)
+                    let national10 = self.phoneField.rawText ?? ""
+                    AuthManager.shared.setPhoneNational10(national10)
 
                 case .failure(let err):
                     self.loginButton.isEnabled = true

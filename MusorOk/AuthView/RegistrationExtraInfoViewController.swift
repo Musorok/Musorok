@@ -159,6 +159,10 @@ final class RegistrationExtraInfoViewController: UIViewController {
                     // ✅ сохраняем имя для приветствия
                     let name = self.nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
                     if !name.isEmpty { AuthManager.shared.setDisplayName(name) }
+                    let email = self.emailField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    AuthManager.shared.setDisplayName(name)
+                    AuthManager.shared.setEmail(email)
+                    AuthManager.shared.setPhoneNational10(self.phoneNational10)
 
                     // сохраняем токен
                     AuthManager.shared.setToken(token, userId: userId)
