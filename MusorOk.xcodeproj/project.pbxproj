@@ -16,6 +16,11 @@
 		7B2F6FB32E4A80B600F4A118 /* CenterSnappingFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */; };
 		7B2F6FB52E4A984500F4A118 /* ChipsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB42E4A984500F4A118 /* ChipsBarView.swift */; };
 		7B2F6FB72E4AB50C00F4A118 /* ProfileEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB62E4AB50C00F4A118 /* ProfileEditViewController.swift */; };
+		7B2F6FB92E4AB95900F4A118 /* AddressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FB82E4AB95900F4A118 /* AddressStore.swift */; };
+		7B2F6FBB2E4AB97600F4A118 /* AddressesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FBA2E4AB97600F4A118 /* AddressesViewController.swift */; };
+		7B2F6FBD2E4ABA7100F4A118 /* ReferralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FBC2E4ABA7100F4A118 /* ReferralManager.swift */; };
+		7B2F6FBF2E4ABA8C00F4A118 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FBE2E4ABA8C00F4A118 /* GradientButton.swift */; };
+		7B2F6FC12E4ABAA800F4A118 /* PromoInviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FC02E4ABAA800F4A118 /* PromoInviteViewController.swift */; };
 		7BCF7ECB2E4787040076180D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECA2E4787040076180D /* AppDelegate.swift */; };
 		7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECC2E4787040076180D /* SceneDelegate.swift */; };
 		7BCF7ED42E4787050076180D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BCF7ED32E4787050076180D /* Assets.xcassets */; };
@@ -57,6 +62,11 @@
 		7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterSnappingFlowLayout.swift; sourceTree = "<group>"; };
 		7B2F6FB42E4A984500F4A118 /* ChipsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipsBarView.swift; sourceTree = "<group>"; };
 		7B2F6FB62E4AB50C00F4A118 /* ProfileEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditViewController.swift; sourceTree = "<group>"; };
+		7B2F6FB82E4AB95900F4A118 /* AddressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressStore.swift; sourceTree = "<group>"; };
+		7B2F6FBA2E4AB97600F4A118 /* AddressesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressesViewController.swift; sourceTree = "<group>"; };
+		7B2F6FBC2E4ABA7100F4A118 /* ReferralManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralManager.swift; sourceTree = "<group>"; };
+		7B2F6FBE2E4ABA8C00F4A118 /* GradientButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientButton.swift; sourceTree = "<group>"; };
+		7B2F6FC02E4ABAA800F4A118 /* PromoInviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoInviteViewController.swift; sourceTree = "<group>"; };
 		7BCF7EC72E4787040076180D /* MusorOk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusorOk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BCF7ECA2E4787040076180D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7BCF7ECC2E4787040076180D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -160,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				7BCF7EE72E4788BB0076180D /* PrimaryButton.swift */,
+				7B2F6FBE2E4ABA8C00F4A118 /* GradientButton.swift */,
 				7BCF7EF72E4789EC0076180D /* FormInputView.swift */,
 				7BCF7EE92E4788DF0076180D /* ScheduleCardView.swift */,
 				7B2F6FB42E4A984500F4A118 /* ChipsBarView.swift */,
@@ -184,6 +195,9 @@
 				7BCF7EEF2E4789320076180D /* ProfileViewController.swift */,
 				7BCF7F172E48DC260076180D /* ProfileContainerViewController.swift */,
 				7B2F6FB62E4AB50C00F4A118 /* ProfileEditViewController.swift */,
+				7B2F6FB82E4AB95900F4A118 /* AddressStore.swift */,
+				7B2F6FC02E4ABAA800F4A118 /* PromoInviteViewController.swift */,
+				7B2F6FBA2E4AB97600F4A118 /* AddressesViewController.swift */,
 			);
 			path = ProfileView;
 			sourceTree = "<group>";
@@ -238,6 +252,7 @@
 				7BCF7F0F2E48AFAC0076180D /* APIClient.swift */,
 				7BCF7F112E48AFD00076180D /* AuthService.swift */,
 				7B2F6FAD2E4A6A0C00F4A118 /* AddressDetailsModel.swift */,
+				7B2F6FBC2E4ABA7100F4A118 /* ReferralManager.swift */,
 			);
 			path = NetworkManagers;
 			sourceTree = "<group>";
@@ -322,15 +337,18 @@
 				7B2F6FB72E4AB50C00F4A118 /* ProfileEditViewController.swift in Sources */,
 				7B2F6FB32E4A80B600F4A118 /* CenterSnappingFlowLayout.swift in Sources */,
 				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
+				7B2F6FBB2E4AB97600F4A118 /* AddressesViewController.swift in Sources */,
 				7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */,
 				7B2F6FA42E4A463900F4A118 /* TrashQuantityViewController.swift in Sources */,
 				7B2F6FA82E4A658D00F4A118 /* OrderDetailsViewController.swift in Sources */,
 				7BCF7F162E48D9880076180D /* OrdersListViewController.swift in Sources */,
 				7B2F6FAE2E4A6A0C00F4A118 /* AddressDetailsModel.swift in Sources */,
+				7B2F6FBF2E4ABA8C00F4A118 /* GradientButton.swift in Sources */,
 				7B2F6FAA2E4A65B200F4A118 /* RadioRow.swift in Sources */,
 				7BCF7F1A2E4922750076180D /* CodeConfirmViewController.swift in Sources */,
 				7BCF7F142E48D9620076180D /* MyOrdersViewController.swift in Sources */,
 				7BCF7EF62E4789C70076180D /* LoginViewController.swift in Sources */,
+				7B2F6FBD2E4ABA7100F4A118 /* ReferralManager.swift in Sources */,
 				7BCF7EE82E4788BB0076180D /* PrimaryButton.swift in Sources */,
 				7BCF7F102E48AFAC0076180D /* APIClient.swift in Sources */,
 				7BCF7EE52E47886C0076180D /* CategoryViewController.swift in Sources */,
@@ -344,8 +362,10 @@
 				7B2F6FB52E4A984500F4A118 /* ChipsBarView.swift in Sources */,
 				7BCF7EFE2E47D51A0076180D /* RegistrationViewController.swift in Sources */,
 				7BCF7EFA2E47D4CA0076180D /* PhoneFormatter.swift in Sources */,
+				7B2F6FC12E4ABAA800F4A118 /* PromoInviteViewController.swift in Sources */,
 				7BCF7EFC2E47D4EC0076180D /* CheckBox.swift in Sources */,
 				7BCF7F0E2E48AF840076180D /* AuthManager.swift in Sources */,
+				7B2F6FB92E4AB95900F4A118 /* AddressStore.swift in Sources */,
 				7BCF7EF82E4789EC0076180D /* FormInputView.swift in Sources */,
 				7BCF7EE32E4788340076180D /* HomeViewController.swift in Sources */,
 				7B2F6FB12E4A789700F4A118 /* UINavigationController+Extension.swift in Sources */,

@@ -82,14 +82,18 @@ final class ProfileViewController: UIViewController {
             self?.navigationItem.backButtonDisplayMode = .minimal
             self?.navigationController?.pushViewController(vc, animated: true)
         }
-        addRow(icon: "mappin.and.ellipse", title: "Мои адреса") {
-            // TODO: push AddressesVC()
+        addRow(icon: "mappin.and.ellipse", title: "Мои адреса") { [weak self] in
+            let vc = AddressesViewController()
+            self?.navigationItem.backButtonDisplayMode = .minimal
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
         addRow(icon: "checkmark.seal", title: "Мои подписки") {
             // TODO: push SubscriptionsVC()
         }
-        addRow(icon: "ticket", title: "Промокоды") {
-            // TODO: push PromoCodesVC()
+        addRow(icon: "ticket", title: "Промокоды") { [weak self] in
+            let vc = PromoInviteViewController()
+            self?.navigationItem.backButtonDisplayMode = .minimal
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
         addRow(icon: "arrowshape.turn.up.left", title: "Выйти из приложения") {
             self.askLogout()
