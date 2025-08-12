@@ -7,74 +7,141 @@
 
 import Foundation
 
-enum APIError: Error, LocalizedError {
-    case invalidURL
-    case transport(Error)
-    case server(status: Int, message: String?)
+enum APIError: Error {
+    case network(Error)
+    case server(message: String, code: Int)
     case decoding
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL: return "Неверный URL"
-        case .transport(let e): return e.localizedDescription
-        case .server(_, let msg): return msg ?? "Ошибка сервера"
-        case .decoding: return "Ошибка обработки ответа"
-        }
-    }
+    case unknown
 }
 
-struct APIClient {
+private struct ServerErrorDTO: Decodable { let message: String? }
+
+final class APIClient {
     static let shared = APIClient()
-    private init() {}
 
-    // ! HTTP, поэтому убедись что в Info.plist ATS разрешён (у тебя уже стоит NSAllowsArbitraryLoads)
-    private let base = URL(string: "http://37.140.243.60:1232")!
+    // проверь, что со схемой:
+    private let baseURL = URL(string: "http://37.140.243.60:1232")!
 
-    func post<B: Encodable, R: Decodable>(
-        _ path: String,
-        body: B,
-        headers: [String: String] = ["Content-Type": "application/json", "accept": "application/json"],
-        completion: @escaping (Result<R, APIError>) -> Void
-    ) {
-        guard let url = URL(string: path, relativeTo: base) else {
-            completion(.failure(.invalidURL)); return
-        }
+    private let session: URLSession = {
+        let cfg = URLSessionConfiguration.default
+        cfg.timeoutIntervalForRequest = 20
+        cfg.timeoutIntervalForResource = 30
+        return URLSession(configuration: cfg)
+    }()
+
+    func post<T: Encodable, R: Decodable>(_ path: String,
+                                          body: T,
+                                          completion: @escaping (Result<R, APIError>) -> Void) {
+        let url = baseURL.appendingPathComponent(path)
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
-        headers.forEach { req.setValue($1, forHTTPHeaderField: $0) }
-        if let token = AuthManager.shared.token {
-            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        do {
-            req.httpBody = try JSONEncoder().encode(body)
-        } catch {
-            completion(.failure(.transport(error))); return
-        }
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        let data = try? JSONEncoder().encode(body)
+        req.httpBody = data
 
-        URLSession.shared.dataTask(with: req) { data, resp, err in
-            if let err = err { return completion(.failure(.transport(err))) }
-            guard let http = resp as? HTTPURLResponse, let data = data else {
-                return completion(.failure(.server(status: -1, message: "Нет ответа")))
+        // 🔎 лог для отладки
+        #if DEBUG
+        if let data = data, let json = String(data: data, encoding: .utf8) {
+            print("➡️ POST \(url.absoluteString)\nBODY: \(json)")
+        }
+        #endif
+
+        session.dataTask(with: req) { data, resp, error in
+            if let error = error {
+                DispatchQueue.main.async { completion(.failure(.network(error))) }
+                return
             }
-            let status = http.statusCode
-
-            // Попробуем декодировать успех
-            if (200..<300).contains(status) {
-                do {
-                    let val = try JSONDecoder().decode(R.self, from: data)
-                    completion(.success(val))
-                } catch {
-                    completion(.failure(.decoding))
-                }
+            guard let http = resp as? HTTPURLResponse else {
+                DispatchQueue.main.async { completion(.failure(.unknown)) }
                 return
             }
 
-            // Ошибка сервера — попробуем вытащить message
-            let msg = (try? JSONDecoder().decode(ServerMessage.self, from: data))?.message
-            completion(.failure(.server(status: status, message: msg)))
+            let status = http.statusCode
+            #if DEBUG
+            let bodyStr = data.flatMap { String(data: $0, encoding: .utf8) } ?? "<empty>"
+            print("⬅️ \(status) \(url.absoluteString)\nBODY: \(bodyStr)")
+            #endif
+
+            // не-2xx -> достанем message
+            guard (200...299).contains(status) else {
+                var msg = "Неизвестная ошибка"
+                if let data = data {
+                    if let dto = try? JSONDecoder().decode(ServerErrorDTO.self, from: data),
+                       let m = dto.message, !m.isEmpty {
+                        msg = m
+                    } else if let s = String(data: data, encoding: .utf8), !s.isEmpty {
+                        msg = s
+                    }
+                }
+                DispatchQueue.main.async { completion(.failure(.server(message: msg, code: status))) }
+                return
+            }
+
+            // успех
+            guard let data = data else {
+                DispatchQueue.main.async { completion(.failure(.unknown)) }
+                return
+            }
+            do {
+                let obj = try JSONDecoder().decode(R.self, from: data)
+                DispatchQueue.main.async { completion(.success(obj)) }
+            } catch {
+                DispatchQueue.main.async { completion(.failure(.decoding)) }
+            }
         }.resume()
     }
 }
 
-struct ServerMessage: Decodable { let message: String }
+struct MessageResponse: Decodable { let message: String?; let error: String? }
+
+extension APIClient {
+    func delete<R: Decodable>(_ path: String,
+                              requiresAuth: Bool = true,
+                              completion: @escaping (Result<R, APIError>) -> Void) {
+        let url = baseURL.appendingPathComponent(path)
+        var req = URLRequest(url: url)
+        req.httpMethod = "DELETE"
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if requiresAuth, let token = AuthManager.shared.token, !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        session.dataTask(with: req) { data, resp, error in
+            if let error = error { return DispatchQueue.main.async { completion(.failure(.network(error))) } }
+            guard let http = resp as? HTTPURLResponse else {
+                return DispatchQueue.main.async { completion(.failure(.unknown)) }
+            }
+
+            #if DEBUG
+            let bodyStr = data.flatMap { String(data: $0, encoding: .utf8) } ?? "<empty>"
+            print("⬅️ \(http.statusCode) DELETE \(url.absoluteString)\nBODY: \(bodyStr)")
+            #endif
+
+            guard (200...299).contains(http.statusCode) else {
+                var msg = "Неизвестная ошибка"
+                if let data = data {
+                    if let dto = try? JSONDecoder().decode(MessageResponse.self, from: data),
+                       let m = dto.message ?? dto.error, !m.isEmpty { msg = m }
+                    else if let s = String(data: data, encoding: .utf8), !s.isEmpty { msg = s }
+                }
+                return DispatchQueue.main.async { completion(.failure(.server(message: msg, code: http.statusCode))) }
+            }
+
+            guard let data = data else {
+                return DispatchQueue.main.async { completion(.failure(.unknown)) }
+            }
+            do {
+                let obj = try JSONDecoder().decode(R.self, from: data)
+                DispatchQueue.main.async { completion(.success(obj)) }
+            } catch {
+                DispatchQueue.main.async { completion(.failure(.decoding)) }
+            }
+        }.resume()
+    }
+}
+
+
 

@@ -38,7 +38,7 @@ final class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        navigationItem.title = "Профиль"
+        title = "Профиль"
 
         setupHeader()
         setupMenu()
@@ -182,11 +182,59 @@ final class ProfileViewController: UIViewController {
         let a = UIAlertController(title: "Удалить аккаунт?",
                                   message: "Это действие нельзя отменить.",
                                   preferredStyle: .alert)
-        a.addAction(UIAlertAction(title: "Удалить", style: .destructive) { _ in
-            // TODO: вызов бэка на удаление аккаунта
-            AuthManager.shared.logout()
-        })
         a.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        a.addAction(UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            self.performDelete()
+        })
         present(a, animated: true)
+    }
+    
+    private func performDelete() {
+        // блокирующий лоадер
+        let overlay = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+        overlay.frame = view.bounds
+        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        let spinner = UIActivityIndicatorView(style: .large)
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        overlay.contentView.addSubview(spinner)
+        NSLayoutConstraint.activate([
+            spinner.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+            spinner.centerYAnchor.constraint(equalTo: overlay.centerYAnchor)
+        ])
+        view.addSubview(overlay)
+        spinner.startAnimating()
+        view.isUserInteractionEnabled = false
+
+        AuthService.deleteAccount { [weak self] result in
+            guard let self = self else { return }
+            self.view.isUserInteractionEnabled = true
+            overlay.removeFromSuperview()
+
+            switch result {
+            case .success:
+                // чистим локальные данные и рассылаем нотификацию
+                AuthManager.shared.logout()
+                // приятный HUD об успехе
+                let ok = UIAlertController(title: "Аккаунт удалён", message: nil, preferredStyle: .alert)
+                ok.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(ok, animated: true)
+
+            case .failure(let err):
+                let msg: String
+                switch err {
+                case .server(let m, let code):
+                    msg = "Ошибка \(code): \(m)"
+                case .network(let e):
+                    msg = "Проверьте интернет. \(e.localizedDescription)"
+                case .decoding:
+                    msg = "Не удалось прочитать ответ сервера"
+                default:
+                    msg = "Неизвестная ошибка"
+                }
+                let alert = UIAlertController(title: "Не удалось удалить", message: msg, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(alert, animated: true)
+            }
+        }
     }
 }

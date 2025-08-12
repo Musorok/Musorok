@@ -110,6 +110,59 @@ final class RegistrationExtraInfoViewController: UIViewController {
             loader.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
+    
+    private func showSuccessHUD(_ title: String = "Готово") {
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemChromeMaterial))
+        blur.layer.cornerRadius = 16
+        blur.clipsToBounds = true
+        blur.alpha = 0
+        blur.translatesAutoresizingMaskIntoConstraints = false
+
+        let icon = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
+        icon.tintColor = .systemGreen
+        icon.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = title
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let stack = UIStackView(arrangedSubviews: [icon, label])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 12
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(blur)
+        blur.contentView.addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            blur.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            blur.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            blur.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 24),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: blur.trailingAnchor, constant: 24),
+
+            stack.leadingAnchor.constraint(equalTo: blur.contentView.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: blur.contentView.trailingAnchor, constant: -16),
+            stack.topAnchor.constraint(equalTo: blur.contentView.topAnchor, constant: 12),
+            stack.bottomAnchor.constraint(equalTo: blur.contentView.bottomAnchor, constant: -12),
+
+            icon.widthAnchor.constraint(equalToConstant: 28),
+            icon.heightAnchor.constraint(equalToConstant: 28)
+        ])
+
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+        UIView.animate(withDuration: 0.18, animations: {
+            blur.alpha = 1
+        }) { _ in
+            UIView.animate(withDuration: 0.25, delay: 0.8, options: [.curveEaseInOut]) {
+                blur.alpha = 0
+            } completion: { _ in
+                blur.removeFromSuperview()
+            }
+        }
+    }
 
     @objc private func back() { navigationController?.popViewController(animated: true) }
 
@@ -166,13 +219,25 @@ final class RegistrationExtraInfoViewController: UIViewController {
 
                     // сохраняем токен
                     AuthManager.shared.setToken(token, userId: userId)
+                    self.showSuccessHUD("Аккаунт создан")
 
                     // вернёмся к корню; таббар сам переключит «Заказы», а «Профиль» прочитает имя
                     self.navigationController?.popToRootViewController(animated: true)
 
                 case .failure(let err):
-                    self.showError(err.localizedDescription)
                     self.registerButton.isEnabled = true
+                    let msg: String
+                    switch err {
+                    case .server(let m, let code):
+                        msg = "Ошибка \(code): \(m)"
+                    case .network(let e):
+                        msg = "Проверьте интернет-соединение. \(e.localizedDescription)"
+                    case .decoding:
+                        msg = "Не удалось прочитать ответ сервера"
+                    case .unknown:
+                        msg = "Неизвестная ошибка"
+                    }
+                    self.showError(msg)
                 }
             }
         }

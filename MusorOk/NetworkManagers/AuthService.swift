@@ -100,7 +100,7 @@ struct RegisterResponse: Decodable {
 enum AuthService {
 
     // 🔌 Переключатель: true — работаем без бэка; false — реальные запросы
-    static var useMock = true
+    static var useMock = false
 
     // MARK: Login
     static func login(phoneNational10: String,
@@ -112,7 +112,8 @@ enum AuthService {
             return mockLogin(phoneNational10: phoneNational10, password: password, roles: roles, completion: completion)
         }
 
-        let backendPhone = "8" + phoneNational10
+        let ten = phoneNational10.filter { $0.isNumber }
+        let backendPhone = "8" + ten
         let body = LoginRequest(password: password, phone_number: backendPhone, role: roles)
         APIClient.shared.post("/auth/login", body: body, completion: completion)
     }
@@ -166,6 +167,30 @@ private extension AuthService {
                 user: 1
             )
             completion(.success(resp))
+        }
+    }
+}
+
+struct DeleteProfileResponse: Decodable { let message: String?; let error: String? }
+
+extension AuthService {
+    static func deleteAccount(completion: @escaping (Result<String, APIError>) -> Void) {
+
+        if useMock {
+            // мок для разработки
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                completion(.success("OK"))
+            }
+            return
+        }
+
+        APIClient.shared.delete("/profile", requiresAuth: true) { (result: Result<DeleteProfileResponse, APIError>) in
+            switch result {
+            case .success(let resp):
+                completion(.success(resp.message ?? "OK"))
+            case .failure(let err):
+                completion(.failure(err))
+            }
         }
     }
 }
