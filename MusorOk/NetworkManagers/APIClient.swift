@@ -14,6 +14,20 @@ enum APIError: Error {
     case unknown
 }
 
+struct ActiveOrderDTO: Decodable {
+    let id: Int
+    let address: String?
+    let status: String?
+    let createdAt: String?
+}
+
+struct HistoryOrderDTO: Decodable {
+    let id: Int
+    let address: String?
+    let status: String?     // например: completed/canceled
+    let finishedAt: String?
+}
+
 private struct ServerErrorDTO: Decodable { let message: String? }
 
 final class APIClient {
@@ -198,6 +212,99 @@ extension APIClient {
                 DispatchQueue.main.async { completion(.success(obj)) }
             } catch {
                 DispatchQueue.main.async { completion(.failure(.decoding)) }
+            }
+        }.resume()
+    }
+}
+
+extension APIClient {
+    func getActiveOrders(completion: @escaping (Result<[ActiveOrderDTO], APIError>) -> Void) {
+        let url = baseURL.appendingPathComponent("/user/garbage/active")
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if let token = AuthManager.shared.token, !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        session.dataTask(with: req) { data, resp, error in
+            if let error = error {
+                return DispatchQueue.main.async { completion(.failure(.network(error))) }
+            }
+            guard let http = resp as? HTTPURLResponse else {
+                return DispatchQueue.main.async { completion(.failure(.unknown)) }
+            }
+
+            // 401 → неавторизован
+            if http.statusCode == 401 {
+                let message = (data.flatMap { try? JSONDecoder().decode(MessageResponse.self, from: $0) }?.error)
+                    ?? "Unauthorized"
+                return DispatchQueue.main.async {
+                    completion(.failure(.server(message: message, code: 401)))
+                }
+            }
+
+            guard (200...299).contains(http.statusCode) else {
+                let message = (data.flatMap { try? JSONDecoder().decode(MessageResponse.self, from: $0) }?.error)
+                    ?? "Server error"
+                return DispatchQueue.main.async {
+                    completion(.failure(.server(message: message, code: http.statusCode)))
+                }
+            }
+
+            // Пытаемся декодить массив заказов; если сервер вдруг вернул { "message": "..." } — считаем, что пусто
+            guard let data = data else { return DispatchQueue.main.async { completion(.success([])) } }
+            if let arr = try? JSONDecoder().decode([ActiveOrderDTO].self, from: data) {
+                return DispatchQueue.main.async { completion(.success(arr)) }
+            } else {
+                return DispatchQueue.main.async { completion(.success([])) }
+            }
+        }.resume()
+    }
+}
+
+extension APIClient {
+    func getOrderHistory(completion: @escaping (Result<[HistoryOrderDTO], APIError>) -> Void) {
+        // если у бэка другой путь — поменяй строку ниже
+        let url = baseURL.appendingPathComponent("/user/garbage/history")
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if let token = AuthManager.shared.token, !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        session.dataTask(with: req) { data, resp, error in
+            if let error = error {
+                return DispatchQueue.main.async { completion(.failure(.network(error))) }
+            }
+            guard let http = resp as? HTTPURLResponse else {
+                return DispatchQueue.main.async { completion(.failure(.unknown)) }
+            }
+
+            if http.statusCode == 401 {
+                let message = (data.flatMap { try? JSONDecoder().decode(MessageResponse.self, from: $0) }?.error)
+                    ?? "Unauthorized"
+                return DispatchQueue.main.async {
+                    completion(.failure(.server(message: message, code: 401)))
+                }
+            }
+
+            guard (200...299).contains(http.statusCode) else {
+                let message = (data.flatMap { try? JSONDecoder().decode(MessageResponse.self, from: $0) }?.error)
+                    ?? "Server error"
+                return DispatchQueue.main.async {
+                    completion(.failure(.server(message: message, code: http.statusCode)))
+                }
+            }
+
+            guard let data = data else { return DispatchQueue.main.async { completion(.success([])) } }
+            if let arr = try? JSONDecoder().decode([HistoryOrderDTO].self, from: data) {
+                return DispatchQueue.main.async { completion(.success(arr)) }
+            } else {
+                return DispatchQueue.main.async { completion(.success([])) }
             }
         }.resume()
     }
