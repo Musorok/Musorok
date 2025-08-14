@@ -14,6 +14,7 @@ final class RootTabBarController: UITabBarController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         tabBar.tintColor = .label
+        setupTabBarAppearance()
 
         let home = UINavigationController(rootViewController: HomeViewController())
         home.tabBarItem = UITabBarItem(title: "Главная",
@@ -67,5 +68,12 @@ final class RootTabBarController: UITabBarController {
         if nav.viewControllers.first is AuthContainerViewController { return }
         let auth = AuthContainerViewController()
         nav.setViewControllers([auth], animated: animated)
+    }
+    
+    private func setupTabBarAppearance() {
+        tabBar.tintColor = UIColor.systemGreen // активная вкладка
+        tabBar.unselectedItemTintColor = UIColor.gray // неактивные вкладки
+        tabBar.backgroundColor = .systemBackground
+        tabBar.isTranslucent = false
     }
 }
