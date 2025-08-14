@@ -143,5 +143,64 @@ extension APIClient {
     }
 }
 
+extension APIClient {
+    func put<T: Encodable, R: Decodable>(_ path: String,
+                                         body: T,
+                                         requiresAuth: Bool = true,
+                                         completion: @escaping (Result<R, APIError>) -> Void) {
+        let url = baseURL.appendingPathComponent(path)
+        var req = URLRequest(url: url)
+        req.httpMethod = "PUT"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if requiresAuth, let token = AuthManager.shared.token, !token.isEmpty {
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let payload = try? JSONEncoder().encode(body)
+        req.httpBody = payload
+
+        #if DEBUG
+        if let payload, let json = String(data: payload, encoding: .utf8) {
+            print("➡️ PUT \(url.absoluteString)\nBODY: \(json)")
+        }
+        #endif
+
+        session.dataTask(with: req) { data, resp, error in
+            if let error = error {
+                return DispatchQueue.main.async { completion(.failure(.network(error))) }
+            }
+            guard let http = resp as? HTTPURLResponse else {
+                return DispatchQueue.main.async { completion(.failure(.unknown)) }
+            }
+
+            #if DEBUG
+            let bodyStr = data.flatMap { String(data: $0, encoding: .utf8) } ?? "<empty>"
+            print("⬅️ \(http.statusCode) \(url.absoluteString)\nBODY: \(bodyStr)")
+            #endif
+
+            guard (200...299).contains(http.statusCode) else {
+                var msg = "Неизвестная ошибка"
+                if let data = data {
+                    if let dto = try? JSONDecoder().decode(MessageResponse.self, from: data),
+                       let m = dto.message ?? dto.error, !m.isEmpty { msg = m }
+                    else if let s = String(data: data, encoding: .utf8), !s.isEmpty { msg = s }
+                }
+                return DispatchQueue.main.async { completion(.failure(.server(message: msg, code: http.statusCode))) }
+            }
+
+            guard let data = data else {
+                return DispatchQueue.main.async { completion(.failure(.unknown)) }
+            }
+            do {
+                let obj = try JSONDecoder().decode(R.self, from: data)
+                DispatchQueue.main.async { completion(.success(obj)) }
+            } catch {
+                DispatchQueue.main.async { completion(.failure(.decoding)) }
+            }
+        }.resume()
+    }
+}
 
 

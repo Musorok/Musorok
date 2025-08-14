@@ -8,6 +8,11 @@
 import UIKit
 
 final class ProfileEditViewController: UIViewController {
+    
+    private struct UpdateProfileRequest: Encodable {
+        let email: String
+        let name: String
+    }
 
     // MARK: - UI
     private let scroll = UIScrollView()
@@ -163,19 +168,44 @@ final class ProfileEditViewController: UIViewController {
 
     @objc private func saveTapped() {
         view.endEditing(true)
-        let newName  = nameField.text ?? ""
-        let newEmail = emailField.text ?? ""
 
-        // имитация запроса — тут дерни свой API /profile/update
-        AuthManager.shared.setDisplayName(newName)
-        AuthManager.shared.setEmail(newEmail)
+        let newName  = (nameField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let newEmail = (emailField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let body = UpdateProfileRequest(email: newEmail, name: newName)
 
-        let ok = UIAlertAction(title: "Готово", style: .default) { _ in
-            self.navigationController?.popViewController(animated: true)
+        // Блокируем кнопку на время запроса
+        saveButton.isEnabled = false
+
+        APIClient.shared.put("/profile", body: body, requiresAuth: true) { (result: Result<MessageResponse, APIError>) in
+            switch result {
+            case .success:
+                // локально обновим кэш профиля
+                AuthManager.shared.setDisplayName(newName)
+                AuthManager.shared.setEmail(newEmail)
+
+                self.initialName = newName
+                self.initialEmail = newEmail
+                self.validate()
+
+                let ac = UIAlertController(title: "Сохранено", message: nil, preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                    self.navigationController?.popViewController(animated: true)
+                })
+                self.present(ac, animated: true)
+
+            case .failure(let err):
+                self.saveButton.isEnabled = true
+                let msg: String
+                switch err {
+                case .server(let m, _): msg = m
+                case .network(let e):   msg = e.localizedDescription
+                default:                msg = "Не удалось сохранить. Попробуйте ещё раз."
+                }
+                let ac = UIAlertController(title: "Ошибка", message: msg, preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(ac, animated: true)
+            }
         }
-        let alert = UIAlertController(title: "Сохранено", message: nil, preferredStyle: .alert)
-        alert.addAction(ok)
-        present(alert, animated: true)
     }
 
     // MARK: - Validation
