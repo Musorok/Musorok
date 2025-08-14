@@ -105,7 +105,7 @@ enum AuthService {
     // MARK: Login
     static func login(phoneNational10: String,
                       password: String,
-                      roles: String = "user,courier",
+                      roles: String = "user",
                       completion: @escaping (Result<LoginResponse, APIError>) -> Void) {
 
         if useMock {
@@ -123,7 +123,7 @@ enum AuthService {
                          name: String,
                          password: String,
                          phoneNational10: String,
-                         roles: String = "user,courier",
+                         roles: String = "user",
                          completion: @escaping (Result<RegisterResponse, APIError>) -> Void) {
 
         if useMock {
