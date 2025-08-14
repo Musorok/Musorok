@@ -21,6 +21,18 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     // Yandex SearchKit
     private var searchManager: YMKSearchManager!
     private var searchSession: YMKSearchSession?
+    
+    private var forwardSearchSession: YMKSearchSession?
+    private var suggestTable = UITableView()
+    private var searchResults: [SearchResult] = []
+    private var selectedPoint: YMKPoint? // координата результата поиска/центра камеры
+    private var searchWorkItem: DispatchWorkItem?
+
+    private struct SearchResult {
+        let title: String
+        let subtitle: String?
+        let point: YMKPoint
+    }
 
     // MARK: - UI
     private let backButton: UIButton = {
@@ -91,6 +103,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
         locateButton.addTarget(self, action: #selector(centerOnUser), for: .touchUpInside)
         confirmButton.addTarget(self, action: #selector(confirm), for: .touchUpInside)
+        wireSearchUI()
     }
 
     // MARK: - Map / Search
@@ -182,6 +195,29 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         ])
         view.layoutIfNeeded()
     }
+    
+    private func wireSearchUI() {
+        // Таблица подсказок
+        suggestTable.translatesAutoresizingMaskIntoConstraints = false
+        suggestTable.isHidden = true
+        suggestTable.layer.cornerRadius = 14
+        suggestTable.clipsToBounds = true
+        suggestTable.dataSource = self
+        suggestTable.delegate = self
+        suggestTable.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        bottomPanel.addSubview(suggestTable)
+        NSLayoutConstraint.activate([
+            suggestTable.topAnchor.constraint(equalTo: addressField.bottomAnchor, constant: 8),
+            suggestTable.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
+            suggestTable.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
+            suggestTable.heightAnchor.constraint(lessThanOrEqualToConstant: 220)
+        ])
+
+        // Реакция на ввод текста — дебаунс
+        addressField.onTextChange = { [weak self] text in
+            self?.debouncedForwardSearch(query: text ?? "")
+        }
+    }
 
     // MARK: - Location
     private func setupLocation() {
@@ -220,6 +256,76 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             reverseGeocodeYandex(YMKPoint(latitude: p.latitude, longitude: p.longitude))
         }
     }
+    
+    // 3) ДЕБАУНС + ПОИСК ПО ТЕКСТУ
+    private func debouncedForwardSearch(query: String) {
+        searchWorkItem?.cancel()
+        guard query.trimmingCharacters(in: .whitespaces).count >= 3 else {
+            forwardSearchSession?.cancel()
+            searchResults.removeAll()
+            suggestTable.isHidden = true
+            confirmButton.isEnabled = false
+            return
+        }
+        let work = DispatchWorkItem { [weak self] in self?.forwardSearchYandex(query) }
+        searchWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work) // 250 мс
+    }
+
+    private func forwardSearchYandex(_ query: String) {
+        forwardSearchSession?.cancel()
+
+        let opts = YMKSearchOptions()
+        let visible = ymapView.mapWindow.map.visibleRegion
+        let geometry = YMKVisibleRegionUtils.toPolygon(with: visible)
+
+        if searchManager == nil {
+            searchManager = YMKSearchFactory.instance().createSearchManager(with: .combined)
+        }
+
+        forwardSearchSession = searchManager.submit(
+            withText: query,
+            geometry: geometry,
+            searchOptions: opts,
+            responseHandler: { [weak self] (response, error) in
+                guard let self else { return }
+
+                // Если ошибка — скрываем таблицу
+                if let _ = error {
+                    DispatchQueue.main.async {
+                        self.searchResults.removeAll()
+                        self.suggestTable.isHidden = true
+                        self.suggestTable.reloadData()
+                    }
+                    return
+                }
+
+                let children = response?.collection.children ?? []
+
+                let results: [SearchResult] = children.compactMap { item in
+                    guard let obj = item.obj,
+                          let point = obj.geometry.first?.point else { return nil }
+
+                    // name может быть nil → делаем фолбэк из formattedAddress или дефолтной строки
+                    var subtitle: String?
+                    if let meta = obj.metadataContainer
+                        .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata {
+                        subtitle = meta.address.formattedAddress
+                    }
+
+                    let title = obj.name ?? subtitle ?? "Адрес"
+
+                    return SearchResult(title: title, subtitle: subtitle, point: point)
+                }
+
+                DispatchQueue.main.async {
+                    self.searchResults = results
+                    self.suggestTable.isHidden = results.isEmpty
+                    self.suggestTable.reloadData()
+                }
+            }
+        )
+    }
 
     // MARK: - Actions
     @objc private func didTapBack() { dismiss(animated: true) }
@@ -243,16 +349,26 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         }
     }
 
+    // 6) КНОПКА «Подтвердить адрес» — ДОПОЛНИ: сохраняем координату
     @objc private func confirm() {
         let line = addressField.text ?? ""
+
+        // координата: либо из последнего поиска, либо центр камеры на всякий случай
+        let point = selectedPoint ?? ymapView.mapWindow.map.cameraPosition.target
+        let lat = point.latitude
+        let lng = point.longitude
+
+        // Передай дальше и координаты (добавь в вашу модель/инициализатор)
         let vc = AddressDetailsViewController(addressLine: line)
+        // Пример: сохрани lat/lng в синглтон/контейнер заказа, или расширь AddressDetails
+        // OrderDraft.shared.pickup = .init(address: line, lat: lat, lng: lng)
+
         vc.onSubmit = { details in
-            // здесь потом вызовешь создание заказа
-            // print("ORDER:", details)
+            // здесь же у тебя пойдёт создание заказа на бэке с lat/lng
+            // POST /orders { address_text: line, lat, lng, + детали подъезда }
         }
-        let nav = navigationController ?? (parent?.navigationController)
         navigationItem.backButtonDisplayMode = .minimal
-        nav?.pushViewController(vc, animated: true)
+        (navigationController ?? parent?.navigationController)?.pushViewController(vc, animated: true)
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -278,6 +394,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
     // MARK: - Reverse geocode (Yandex SearchKit)
     private func reverseGeocodeYandex(_ point: YMKPoint) {
+        selectedPoint = point
         searchSession?.cancel()
 
         let opts = YMKSearchOptions()
@@ -318,3 +435,32 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         }
     }
 }
+
+// 4) ТАБЛИЦА ПОДСКАЗОК
+extension AddressPickerViewController: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tv: UITableView, numberOfRowsInSection section: Int) -> Int { searchResults.count }
+    func tableView(_ tv: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let c = tv.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let r = searchResults[indexPath.row]
+        var cfg = c.defaultContentConfiguration()
+        cfg.text = r.subtitle ?? r.title
+        cfg.secondaryText = (r.subtitle == nil) ? nil : r.title
+        c.contentConfiguration = cfg
+        return c
+    }
+    func tableView(_ tv: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let r = searchResults[indexPath.row]
+        // Сохраняем выбранную точку и подставляем адрес
+        selectedPoint = r.point
+        let pos = YMKCameraPosition(target: r.point, zoom: 17, azimuth: 0, tilt: 0)
+        let anim = YMKAnimation(type: .smooth, duration: 0.25)
+        ymapView.mapWindow.map.move(with: pos, animation: anim, cameraCallback: nil)
+
+        addressField.setText(r.subtitle ?? r.title)
+        confirmButton.isEnabled = true
+
+        searchResults.removeAll()
+        suggestTable.isHidden = true
+    }
+}
+
