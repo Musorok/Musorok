@@ -52,14 +52,19 @@ final class ProfileContainerViewController: UIViewController {
     }
 
     private func showAuth() {
+        // Для онбординга/логина — обычно без навбара
+        navigationController?.setNavigationBarHidden(true, animated: false)
+
         let auth = AuthContainerViewController()
         setChild(auth)
     }
 
     private func showProfile() {
+        // Для профиля — навбар виден (один, внешний, из RootTabBarController)
+        navigationController?.setNavigationBarHidden(false, animated: false)
+
         let profile = ProfileViewController()
-        let nav = UINavigationController(rootViewController: profile)
-        nav.navigationBar.isTranslucent = false
-        setChild(nav)
+        // НИКАКОГО второго UINavigationController здесь!
+        setChild(profile)
     }
 }
