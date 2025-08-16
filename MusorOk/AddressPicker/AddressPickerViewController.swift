@@ -11,23 +11,31 @@ import YandexMapsMobile
 
 final class AddressPickerViewController: UIViewController, CLLocationManagerDelegate, YMKMapCameraListener {
 
-    // Карта как IUO, чтобы обращаться без "?"
+    private enum SheetState { case medium, expanded }
+    private var sheetState: SheetState = .medium
+
+    private var bottomPanelHeight: NSLayoutConstraint!
+    private var confirmBottomToKeyboard: NSLayoutConstraint?
+    private var confirmBottomToSafeArea: NSLayoutConstraint!
+    private var bottomPanelTop: NSLayoutConstraint!
+    private var bottomToKeyboard: NSLayoutConstraint!
+    private var panStartHeight: CGFloat = 0
+    private var mediumH: CGFloat = 0        // вычисляется по экрану
+    private var expandedH: CGFloat = 0       // вычисляется по экрану
+    private var didComputeHeights = false
+
+    // MARK: - Map / Location
     private var ymapView: YMKMapView!
     private var didKickoffLocation = false
-
     private var userLocationLayer: YMKUserLocationLayer!
     private let locationManager = CLLocationManager()
 
-    // Yandex SearchKit
+    // MARK: - SearchKit
     private var searchManager: YMKSearchManager!
     private var searchSession: YMKSearchSession?
-    
     private var forwardSearchSession: YMKSearchSession?
-    private var suggestTable = UITableView()
-    private var searchResults: [SearchResult] = []
-    private var selectedPoint: YMKPoint? // координата результата поиска/центра камеры
     private var searchWorkItem: DispatchWorkItem?
-
+    private var searchResults: [SearchResult] = []
     private struct SearchResult {
         let title: String
         let subtitle: String?
@@ -35,17 +43,6 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     }
 
     // MARK: - UI
-    private let backButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-        b.tintColor = .label
-        b.backgroundColor = .systemBackground
-        b.layer.cornerRadius = 12
-        b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
-        b.translatesAutoresizingMaskIntoConstraints = false
-        return b
-    }()
-
     private let locateButton: UIButton = {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "location.fill"), for: .normal)
@@ -71,16 +68,23 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     }()
 
     private let bottomPanel = UIView()
-    private let titleLabel: UILabel = {
-        let l = UILabel()
-        l.text = "Адрес, откуда заберем мусор"
-        l.font = .systemFont(ofSize: 18, weight: .semibold)
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
+    private let grabber: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = .tertiaryLabel
+        v.layer.cornerRadius = 2
+        return v
     }()
 
-    // Переиспользуем твой текстовый инпут (НЕ телефон)
-    private let addressField = FormInputView(title: " ", placeholder: "", keyboard: .default, isSecure: false)
+    // Убрали titleLabel — поле сразу сверху
+    private let addressField = FormInputView(title: "Адрес, откуда забрать мусор", placeholder: "Введите адрес", keyboard: .default, isSecure: false)
+
+    private let separator: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = .quaternaryLabel
+        return v
+    }()
 
     private let confirmButton: PrimaryButton = {
         let b = PrimaryButton()
@@ -90,55 +94,57 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         return b
     }()
 
+    private let suggestTable = UITableView(frame: .zero, style: .plain)
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.tintColor = .label
 
-        setupMap()       // создать карту и слои
-        setupLayout()    // констрейнты и панель
-        setupLocation()  // запрос прав и первая локация
+        setupMap()
+        setupLayout()
+        setupLocation()
+        wireSearchUI()
 
-        backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
         locateButton.addTarget(self, action: #selector(centerOnUser), for: .touchUpInside)
         confirmButton.addTarget(self, action: #selector(confirm), for: .touchUpInside)
-        wireSearchUI()
+
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handleSheetPan(_:)))
+        bottomPanel.addGestureRecognizer(pan)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        computeHeightsIfNeeded()
     }
 
     // MARK: - Map / Search
     private func setupMap() {
-        // 1) Карта
         ymapView = YMKMapView(frame: .zero)
         ymapView.translatesAutoresizingMaskIntoConstraints = false
         ymapView.isOpaque = true
         ymapView.backgroundColor = .systemBackground
 
-        // 2) Жесты
         let map = ymapView.mapWindow.map
         map.isRotateGesturesEnabled = true
         map.isScrollGesturesEnabled = true
-        map.isZoomGesturesEnabled = true   // пинч-зум
+        map.isZoomGesturesEnabled = true
         map.isTiltGesturesEnabled = true
 
-        // 3) Слой юзер-локации
         userLocationLayer = YMKMapKit.sharedInstance()
             .createUserLocationLayer(with: ymapView.mapWindow)
-        userLocationLayer.setVisibleWithOn(true)       // в твоей версии SDK это метод
-        userLocationLayer.isHeadingModeActive = true   // ObjC getter=isHeadingModeActive → Swift свойство
+        userLocationLayer.setVisibleWithOn(true)
+        userLocationLayer.isHeadingModeActive = true
 
-        // 4) Подписка на камеру
         map.addCameraListener(with: self)
 
-        // 5) SearchKit: менеджер поиска
-        // В актуальной MapKit используется фабрика Search:
-        // Если у тебя другой минор — можно заменить на YMKSearch.sharedInstance().createSearchManager(...)
-        searchManager = YMKSearchFactory.instance().createSearchManager(with: YMKSearchManagerType.combined)
+        searchManager = YMKSearchFactory.instance().createSearchManager(with: .combined)
     }
 
     // MARK: - Layout
     private func setupLayout() {
-        // карта
+        // Карта
         view.addSubview(ymapView)
         NSLayoutConstraint.activate([
             ymapView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -147,71 +153,175 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             ymapView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        // ❗️СНАЧАЛА добавляем bottomPanel
-        bottomPanel.translatesAutoresizingMaskIntoConstraints = false
-        bottomPanel.backgroundColor = .systemBackground
-        bottomPanel.layer.cornerRadius = 24
-        bottomPanel.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        view.addSubview(bottomPanel)
-        NSLayoutConstraint.activate([
-            bottomPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bottomPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bottomPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor), // ← БЕЗ сдвига
-            bottomPanel.heightAnchor.constraint(equalToConstant: 240)        // ← было 220, +5 pt
-        ])
-
+        // Плавающая кнопка "геолокация" — всегда над шитом
         view.addSubview(locateButton)
-        NSLayoutConstraint.activate([
-            locateButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            // ✅ теперь можно привязать к панели
-            locateButton.bottomAnchor.constraint(equalTo: bottomPanel.topAnchor, constant: -12)
-        ])
-        view.bringSubviewToFront(locateButton) // чтобы кнопка была поверх панели
 
-        // пин в центре
+        // Центр-пин
         view.addSubview(centerPin)
         NSLayoutConstraint.activate([
             centerPin.centerXAnchor.constraint(equalTo: ymapView.centerXAnchor),
             centerPin.centerYAnchor.constraint(equalTo: ymapView.centerYAnchor, constant: -12)
         ])
 
-        // контент панели
-        bottomPanel.addSubview(titleLabel)
-        bottomPanel.addSubview(addressField)
-        bottomPanel.addSubview(confirmButton)
+        bottomPanel.translatesAutoresizingMaskIntoConstraints = false
+        bottomPanel.backgroundColor = .systemBackground
+        bottomPanel.layer.cornerRadius = 24
+        bottomPanel.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        bottomPanel.layer.masksToBounds = true
+        view.addSubview(bottomPanel)
+
+        bottomPanelTop = bottomPanel.topAnchor.constraint(
+            equalTo: view.safeAreaLayoutGuide.topAnchor,
+            constant: view.bounds.height - 260
+        )
+
+        if #available(iOS 15.0, *) {
+            bottomToKeyboard = bottomPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
+        } else {
+            bottomToKeyboard = bottomPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        }
+
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: bottomPanel.topAnchor, constant: 18),
-            titleLabel.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
-            titleLabel.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
-
-            addressField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
-            addressField.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            addressField.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-
-            confirmButton.topAnchor.constraint(equalTo: addressField.bottomAnchor, constant: 16),
-            confirmButton.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            confirmButton.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            confirmButton.heightAnchor.constraint(equalToConstant: 56)
+            bottomPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bottomPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomPanelTop,
+            bottomToKeyboard
         ])
+
+        NSLayoutConstraint.activate([
+            locateButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            locateButton.bottomAnchor.constraint(equalTo: bottomPanel.topAnchor, constant: -12)
+        ])
+        view.bringSubviewToFront(locateButton)
+
+        // Контент шита
+        bottomPanel.addSubview(grabber)
+        bottomPanel.addSubview(addressField)
+        bottomPanel.addSubview(suggestTable)
+        bottomPanel.addSubview(separator)
+        bottomPanel.addSubview(confirmButton)
+
+        NSLayoutConstraint.activate([
+            // Grabber
+            grabber.topAnchor.constraint(equalTo: bottomPanel.topAnchor, constant: 8),
+            grabber.centerXAnchor.constraint(equalTo: bottomPanel.centerXAnchor),
+            grabber.widthAnchor.constraint(equalToConstant: 36),
+            grabber.heightAnchor.constraint(equalToConstant: 4),
+
+            // Address field — СРАЗУ ПОД граббером
+            addressField.topAnchor.constraint(equalTo: grabber.bottomAnchor, constant: 12),
+            addressField.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
+            addressField.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
+
+            // Кнопка подтверждения ВСЕГДА ВНИЗУ ШИТА (не реагирует на клавиатуру)
+            confirmButton.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
+            confirmButton.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
+            confirmButton.bottomAnchor.constraint(equalTo: bottomPanel.bottomAnchor, constant: -12),
+            confirmButton.heightAnchor.constraint(equalToConstant: 56),
+
+            // Разделитель над кнопкой
+            separator.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor),
+            separator.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor),
+            separator.bottomAnchor.constraint(equalTo: confirmButton.topAnchor, constant: -12),
+            separator.heightAnchor.constraint(equalToConstant: 1),
+
+            // Таблица подсказок — между полем и кнопкой
+            suggestTable.topAnchor.constraint(equalTo: addressField.bottomAnchor, constant: 8),
+            suggestTable.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
+            suggestTable.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
+            suggestTable.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -8)
+        ])
+
         view.layoutIfNeeded()
     }
-    
+
+    private func computeHeightsIfNeeded() {
+        guard !didComputeHeights else { return }
+        didComputeHeights = true
+
+        let h = view.bounds.height
+        // medium — «рабочая» высота шита
+        mediumH = max(260, min(h * 0.42, 460))
+        // expanded — почти на весь экран, но оставляем «воздух» сверху
+        expandedH = max(h * 0.72, h - 140)
+
+        applySheetState(.medium, animated: false)
+    }
+
+    // MARK: - Sheet gestures / state
+    @objc private func handleSheetPan(_ gr: UIPanGestureRecognizer) {
+        switch gr.state {
+        case .began:
+            panStartHeight = bottomPanelTop.constant
+
+        case .changed:
+            let dy = gr.translation(in: bottomPanel).y
+            let available = view.bounds.height - view.safeAreaInsets.top
+
+            // Тянем верх/вниз: работаем «по top», а высоту держим в [mediumH ... expandedH]
+            var newTop = panStartHeight + dy
+            newTop = max(available - expandedH, min(available - mediumH, newTop))
+
+            bottomPanelTop.constant = newTop
+            view.layoutIfNeeded()
+
+        case .ended, .cancelled, .failed:
+            let vy = gr.velocity(in: bottomPanel).y
+            let available = view.bounds.height - view.safeAreaInsets.top
+            let currentHeight = available - bottomPanelTop.constant
+
+            let target: SheetState
+            if vy < -700 {
+                // быстрый свайп вверх
+                target = .expanded
+            } else if vy > 700 {
+                // быстрый свайп вниз
+                target = .medium
+            } else {
+                // к ближайшему
+                let dM = abs(currentHeight - mediumH)
+                let dE = abs(currentHeight - expandedH)
+                target = (dM <= dE) ? .medium : .expanded
+            }
+            applySheetState(target, animated: true)
+
+        default:
+            break
+        }
+    }
+
+    private func applySheetState(_ state: SheetState, animated: Bool) {
+        sheetState = state
+        let targetHeight: CGFloat = (state == .medium) ? mediumH : expandedH
+        
+        let available = view.bounds.height - view.safeAreaInsets.top
+        bottomPanelTop.constant = max(0, available - targetHeight)
+
+        let animations: () -> Void = { [weak self] in
+            guard let self = self else { return }
+            self.view.layoutIfNeeded()
+        }
+
+        if animated {
+            UIViewPropertyAnimator(duration: 0.28, dampingRatio: 0.95, animations: animations).startAnimation()
+        } else {
+            animations()
+        }
+    }
+
+    // MARK: - Search UI
     private func wireSearchUI() {
-        // Таблица подсказок
         suggestTable.translatesAutoresizingMaskIntoConstraints = false
         suggestTable.isHidden = true
         suggestTable.layer.cornerRadius = 14
         suggestTable.clipsToBounds = true
         suggestTable.dataSource = self
         suggestTable.delegate = self
+        suggestTable.keyboardDismissMode = .onDrag
+        suggestTable.separatorInset = .init(top: 0, left: 16, bottom: 0, right: 16)
         suggestTable.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        bottomPanel.addSubview(suggestTable)
-        NSLayoutConstraint.activate([
-            suggestTable.topAnchor.constraint(equalTo: addressField.bottomAnchor, constant: 8),
-            suggestTable.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
-            suggestTable.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
-            suggestTable.heightAnchor.constraint(lessThanOrEqualToConstant: 220)
-        ])
+        suggestTable.rowHeight = UITableView.automaticDimension
+        suggestTable.estimatedRowHeight = 40
 
         // Реакция на ввод текста — дебаунс
         addressField.onTextChange = { [weak self] text in
@@ -252,12 +362,11 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
                                  finished: Bool) {
         if finished {
             let p = cameraPosition.target
-            print("Camera finished at:", p.latitude, p.longitude)
             reverseGeocodeYandex(YMKPoint(latitude: p.latitude, longitude: p.longitude))
         }
     }
-    
-    // 3) ДЕБАУНС + ПОИСК ПО ТЕКСТУ
+
+    // MARK: - Debounce + forward search
     private func debouncedForwardSearch(query: String) {
         searchWorkItem?.cancel()
         guard query.trimmingCharacters(in: .whitespaces).count >= 3 else {
@@ -269,7 +378,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         }
         let work = DispatchWorkItem { [weak self] in self?.forwardSearchYandex(query) }
         searchWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work) // 250 мс
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
     }
 
     private func forwardSearchYandex(_ query: String) {
@@ -290,7 +399,6 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             responseHandler: { [weak self] (response, error) in
                 guard let self else { return }
 
-                // Если ошибка — скрываем таблицу
                 if let _ = error {
                     DispatchQueue.main.async {
                         self.searchResults.removeAll()
@@ -301,12 +409,10 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
                 }
 
                 let children = response?.collection.children ?? []
-
                 let results: [SearchResult] = children.compactMap { item in
                     guard let obj = item.obj,
                           let point = obj.geometry.first?.point else { return nil }
 
-                    // name может быть nil → делаем фолбэк из formattedAddress или дефолтной строки
                     var subtitle: String?
                     if let meta = obj.metadataContainer
                         .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata {
@@ -314,7 +420,6 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
                     }
 
                     let title = obj.name ?? subtitle ?? "Адрес"
-
                     return SearchResult(title: title, subtitle: subtitle, point: point)
                 }
 
@@ -328,10 +433,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     }
 
     // MARK: - Actions
-    @objc private func didTapBack() { dismiss(animated: true) }
-
     @objc private func centerOnUser() {
-        // 1) Попытка от Яндекс-слоя
         if let cam = userLocationLayer.cameraPosition() {
             let anim = YMKAnimation(type: .smooth, duration: 0.3)
             ymapView.mapWindow.map.move(with: cam, animation: anim, cameraCallback: nil)
@@ -339,7 +441,6 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             return
         }
 
-        // 2) Fallback: CoreLocation
         if let loc = locationManager.location {
             let c = loc.coordinate
             moveCamera(to: c, animated: true)
@@ -349,60 +450,39 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         }
     }
 
-    // 6) КНОПКА «Подтвердить адрес» — ДОПОЛНИ: сохраняем координату
     @objc private func confirm() {
         let line = addressField.text ?? ""
-
-        // координата: либо из последнего поиска, либо центр камеры на всякий случай
         let point = selectedPoint ?? ymapView.mapWindow.map.cameraPosition.target
         let lat = point.latitude
         let lng = point.longitude
 
-        // Передай дальше и координаты (добавь в вашу модель/инициализатор)
         let vc = AddressDetailsViewController(addressLine: line)
-        // Пример: сохрани lat/lng в синглтон/контейнер заказа, или расширь AddressDetails
-        // OrderDraft.shared.pickup = .init(address: line, lat: lat, lng: lng)
-
         vc.onSubmit = { details in
-            // здесь же у тебя пойдёт создание заказа на бэке с lat/lng
             // POST /orders { address_text: line, lat, lng, + детали подъезда }
         }
         navigationItem.backButtonDisplayMode = .minimal
         (navigationController ?? parent?.navigationController)?.pushViewController(vc, animated: true)
     }
-    
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse, !didKickoffLocation {
-            didKickoffLocation = true
-            centerOnUser()
-        }
-    }
 
     // MARK: - Helpers
+    private var selectedPoint: YMKPoint?
+
     private func moveCamera(to coord: CLLocationCoordinate2D, animated: Bool) {
         let target = YMKPoint(latitude: coord.latitude, longitude: coord.longitude)
         let pos = YMKCameraPosition(target: target, zoom: 15, azimuth: 0, tilt: 0)
         let anim = YMKAnimation(type: .smooth, duration: animated ? 0.3 : 0.0)
-
-        // В разных минорных версиях параметр называется по-разному:
-        if ymapView.mapWindow.map.responds(to: #selector(YMKMap.move(with:animation:cameraCallback:))) {
-            ymapView.mapWindow.map.move(with: pos, animation: anim, cameraCallback: nil)
-        } else {
-            ymapView.mapWindow.map.move(with: pos, animation: anim, cameraCallback: nil)
-        }
+        ymapView.mapWindow.map.move(with: pos, animation: anim, cameraCallback: nil)
     }
 
-    // MARK: - Reverse geocode (Yandex SearchKit)
     private func reverseGeocodeYandex(_ point: YMKPoint) {
         selectedPoint = point
         searchSession?.cancel()
 
         let opts = YMKSearchOptions()
-            opts.searchTypes = .geo
+        opts.searchTypes = .geo
 
-        // Менеджер поиска создаём через фабрику (как в MapKit 4.x)
         if searchManager == nil {
-            searchManager = YMKSearchFactory.instance().createSearchManager(with: YMKSearchManagerType.combined)
+            searchManager = YMKSearchFactory.instance().createSearchManager(with: .combined)
         }
 
         searchSession = searchManager.submit(with: point, zoom: 16, searchOptions: opts) { [weak self] (response, error) in
@@ -420,12 +500,10 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
                 return
             }
 
-            var addressText = obj.name
             if let meta = obj.metadataContainer
                 .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata {
 
-                let address = meta.address
-                let formatted = address.formattedAddress
+                let formatted = meta.address.formattedAddress
                 self.addressField.setText(formatted)
                 self.confirmButton.isEnabled = !formatted.isEmpty
             } else {
@@ -436,21 +514,44 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     }
 }
 
-// 4) ТАБЛИЦА ПОДСКАЗОК
+// MARK: - UITableViewDataSource / Delegate
 extension AddressPickerViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tv: UITableView, numberOfRowsInSection section: Int) -> Int { searchResults.count }
+
     func tableView(_ tv: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let c = tv.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let r = searchResults[indexPath.row]
+
         var cfg = c.defaultContentConfiguration()
+
+        // ИКОНКА СЛЕВА
+        cfg.image = UIImage(named: "address")?.withRenderingMode(.alwaysTemplate)
+        cfg.imageProperties.maximumSize = CGSize(width: 18, height: 18)
+        cfg.imageProperties.reservedLayoutSize = CGSize(width: 18, height: 18) // фикс ширины под иконку
+        cfg.imageToTextPadding = 8
+        cfg.imageProperties.tintColor = .secondaryLabel
+        c.tintColor = .secondaryLabel
+
+        // ТЕКСТЫ
         cfg.text = r.subtitle ?? r.title
         cfg.secondaryText = (r.subtitle == nil) ? nil : r.title
+
+        // МЕНЬШИЕ ШРИФТЫ
+        cfg.textProperties.font = .systemFont(ofSize: 14, weight: .regular)
+        cfg.secondaryTextProperties.font = .systemFont(ofSize: 12, weight: .regular)
+
+        // Компактные отступы
+        cfg.textProperties.numberOfLines = 2
+        cfg.secondaryTextProperties.numberOfLines = 1
+        cfg.directionalLayoutMargins = .init(top: 6, leading: 10, bottom: 6, trailing: 10)
+
         c.contentConfiguration = cfg
         return c
     }
+
+
     func tableView(_ tv: UITableView, didSelectRowAt indexPath: IndexPath) {
         let r = searchResults[indexPath.row]
-        // Сохраняем выбранную точку и подставляем адрес
         selectedPoint = r.point
         let pos = YMKCameraPosition(target: r.point, zoom: 17, azimuth: 0, tilt: 0)
         let anim = YMKAnimation(type: .smooth, duration: 0.25)
