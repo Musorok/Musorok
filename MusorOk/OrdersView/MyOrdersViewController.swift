@@ -61,6 +61,10 @@ final class MyOrdersViewController: UIViewController {
 
         // стартуем с "История" как на скрине — если хочешь "Активные", поменяй на .active
         switchTo(.history, animated: false)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(switchToActiveAndReload),
+                                               name: .switchOrdersToActive,
+                                               object: nil)
     }
 
     private func setupUI() {
@@ -183,6 +187,16 @@ final class MyOrdersViewController: UIViewController {
         container.addSubview(new.view)
         new.didMove(toParent: self)
         current = new
+    }
+    
+    @objc private func switchToActiveAndReload() {
+        switchTo(.active, animated: false)
+
+        // найдём вложенный VC со списком активных и дёрнем загрузку
+        if let list = children.first(where: { ($0 as? OrdersListViewController) != nil }) as? OrdersListViewController {
+            // аккуратно: если у тебя два child (active/history) — лучше адресно обратиться к activeVC
+            list.viewWillAppear(false)
+        }
     }
 }
 

@@ -240,11 +240,13 @@ final class OrderDetailsViewController: UIViewController {
     @objc private func editBags()    { onEditBags?() }
 
     @objc private func pay() {
-        let when: Date? = {
-            if case .scheduled(let d) = arrival { return d }
-            return nil
-        }()
-        onProceedToPay?(when)
+        // если у тебя к этому моменту уже есть orderId — подставь его вместо nil
+        let payVC = PaymentViewController(orderId: nil, amount: totalKZT)
+        if let sheet = payVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(payVC, animated: true)
     }
 
     // helpers

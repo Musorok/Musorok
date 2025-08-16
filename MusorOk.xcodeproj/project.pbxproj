@@ -21,6 +21,9 @@
 		7B2F6FBD2E4ABA7100F4A118 /* ReferralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FBC2E4ABA7100F4A118 /* ReferralManager.swift */; };
 		7B2F6FBF2E4ABA8C00F4A118 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FBE2E4ABA8C00F4A118 /* GradientButton.swift */; };
 		7B2F6FC12E4ABAA800F4A118 /* PromoInviteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B2F6FC02E4ABAA800F4A118 /* PromoInviteViewController.swift */; };
+		7B779C7D2E5116C5008ACAEA /* PaymentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B779C7C2E5116C5008ACAEA /* PaymentViewController.swift */; };
+		7B779C7F2E511857008ACAEA /* Pricing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B779C7E2E511857008ACAEA /* Pricing.swift */; };
+		7B779C812E511A9A008ACAEA /* PendingAddressKeeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B779C802E511A9A008ACAEA /* PendingAddressKeeper.swift */; };
 		7BCF7ECB2E4787040076180D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECA2E4787040076180D /* AppDelegate.swift */; };
 		7BCF7ECD2E4787040076180D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCF7ECC2E4787040076180D /* SceneDelegate.swift */; };
 		7BCF7ED42E4787050076180D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BCF7ED32E4787050076180D /* Assets.xcassets */; };
@@ -67,6 +70,9 @@
 		7B2F6FBC2E4ABA7100F4A118 /* ReferralManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralManager.swift; sourceTree = "<group>"; };
 		7B2F6FBE2E4ABA8C00F4A118 /* GradientButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientButton.swift; sourceTree = "<group>"; };
 		7B2F6FC02E4ABAA800F4A118 /* PromoInviteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoInviteViewController.swift; sourceTree = "<group>"; };
+		7B779C7C2E5116C5008ACAEA /* PaymentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentViewController.swift; sourceTree = "<group>"; };
+		7B779C7E2E511857008ACAEA /* Pricing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pricing.swift; sourceTree = "<group>"; };
+		7B779C802E511A9A008ACAEA /* PendingAddressKeeper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingAddressKeeper.swift; sourceTree = "<group>"; };
 		7BCF7EC72E4787040076180D /* MusorOk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusorOk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BCF7ECA2E4787040076180D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7BCF7ECC2E4787040076180D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -231,6 +237,7 @@
 				7BCF7F232E49652A0076180D /* AddressDetailsViewController.swift */,
 				7B2F6FA32E4A463900F4A118 /* TrashQuantityViewController.swift */,
 				7B2F6FA72E4A658D00F4A118 /* OrderDetailsViewController.swift */,
+				7B779C7C2E5116C5008ACAEA /* PaymentViewController.swift */,
 				7B2F6FA92E4A65B200F4A118 /* RadioRow.swift */,
 				7B2F6FAB2E4A65DA00F4A118 /* TimePickerSheetController.swift */,
 				7B2F6FB22E4A80B600F4A118 /* CenterSnappingFlowLayout.swift */,
@@ -253,6 +260,8 @@
 				7BCF7F112E48AFD00076180D /* AuthService.swift */,
 				7B2F6FAD2E4A6A0C00F4A118 /* AddressDetailsModel.swift */,
 				7B2F6FBC2E4ABA7100F4A118 /* ReferralManager.swift */,
+				7B779C7E2E511857008ACAEA /* Pricing.swift */,
+				7B779C802E511A9A008ACAEA /* PendingAddressKeeper.swift */,
 			);
 			path = NetworkManagers;
 			sourceTree = "<group>";
@@ -339,6 +348,7 @@
 				7BCF7F002E47D6690076180D /* AuthContainerViewController.swift in Sources */,
 				7B2F6FBB2E4AB97600F4A118 /* AddressesViewController.swift in Sources */,
 				7BCF7F1C2E4925E50076180D /* RegistrationExtraInfoViewController.swift in Sources */,
+				7B779C812E511A9A008ACAEA /* PendingAddressKeeper.swift in Sources */,
 				7B2F6FA42E4A463900F4A118 /* TrashQuantityViewController.swift in Sources */,
 				7B2F6FA82E4A658D00F4A118 /* OrderDetailsViewController.swift in Sources */,
 				7BCF7F162E48D9880076180D /* OrdersListViewController.swift in Sources */,
@@ -352,6 +362,7 @@
 				7BCF7EE82E4788BB0076180D /* PrimaryButton.swift in Sources */,
 				7BCF7F102E48AFAC0076180D /* APIClient.swift in Sources */,
 				7BCF7EE52E47886C0076180D /* CategoryViewController.swift in Sources */,
+				7B779C7D2E5116C5008ACAEA /* PaymentViewController.swift in Sources */,
 				7BCF7EEA2E4788DF0076180D /* ScheduleCardView.swift in Sources */,
 				7BCF7F122E48AFD00076180D /* AuthService.swift in Sources */,
 				7BCF7F052E47FA9A0076180D /* AddressPickerViewController.swift in Sources */,
@@ -368,6 +379,7 @@
 				7B2F6FB92E4AB95900F4A118 /* AddressStore.swift in Sources */,
 				7BCF7EF82E4789EC0076180D /* FormInputView.swift in Sources */,
 				7BCF7EE32E4788340076180D /* HomeViewController.swift in Sources */,
+				7B779C7F2E511857008ACAEA /* Pricing.swift in Sources */,
 				7B2F6FB12E4A789700F4A118 /* UINavigationController+Extension.swift in Sources */,
 				7BCF7EF32E4789800076180D /* UIColor+Extension.swift in Sources */,
 				7BCF7F0B2E48AF560076180D /* KeychainStorage.swift in Sources */,

@@ -31,11 +31,6 @@ final class AddressDetailsViewController: UIViewController {
     private let entranceField  = FormInputView(title: "Подъезд*", placeholder: "", keyboard: .numberPad, isSecure: false)
     private let intercomField  = FormInputView(title: "Домофон", placeholder: "", keyboard: .numbersAndPunctuation, isSecure: false)
 
-    // настройки
-    private let noCallTitle = UILabel()
-    private let noCallSubtitle = UILabel()
-    private let noCallSwitch = UISwitch()
-
     private let saveAddressTitle = UILabel()
     private let saveAddressSwitch: UISwitch = {
         let s = UISwitch()
@@ -130,33 +125,6 @@ final class AddressDetailsViewController: UIViewController {
             content.addArrangedSubview($0)
         }
 
-        // «Не звонить»
-        let noCallRow = UIView()
-        noCallRow.translatesAutoresizingMaskIntoConstraints = false
-        noCallTitle.text = "Не звонить"
-        noCallTitle.font = .systemFont(ofSize: 20, weight: .semibold)
-        noCallSubtitle.text = "Курьер позвонит только в случае крайней необходимости"
-        noCallSubtitle.textColor = .secondaryLabel
-        noCallSubtitle.numberOfLines = 0
-        [noCallTitle, noCallSubtitle, noCallSwitch].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            noCallRow.addSubview($0)
-        }
-        NSLayoutConstraint.activate([
-            noCallTitle.topAnchor.constraint(equalTo: noCallRow.topAnchor),
-            noCallTitle.leadingAnchor.constraint(equalTo: noCallRow.leadingAnchor),
-            noCallTitle.trailingAnchor.constraint(lessThanOrEqualTo: noCallSwitch.leadingAnchor, constant: -12),
-
-            noCallSwitch.centerYAnchor.constraint(equalTo: noCallTitle.centerYAnchor),
-            noCallSwitch.trailingAnchor.constraint(equalTo: noCallRow.trailingAnchor),
-
-            noCallSubtitle.topAnchor.constraint(equalTo: noCallTitle.bottomAnchor, constant: 6),
-            noCallSubtitle.leadingAnchor.constraint(equalTo: noCallRow.leadingAnchor),
-            noCallSubtitle.trailingAnchor.constraint(equalTo: noCallRow.trailingAnchor),
-            noCallSubtitle.bottomAnchor.constraint(equalTo: noCallRow.bottomAnchor)
-        ])
-        content.addArrangedSubview(noCallRow)
-
         // «Запомнить адрес»
         let saveRow = UIView()
         saveRow.translatesAutoresizingMaskIntoConstraints = false
@@ -231,16 +199,36 @@ final class AddressDetailsViewController: UIViewController {
 
     @objc private func submit() {
         guard submitButton.isEnabled else { return }
+
+        // Готовим payload для следующего шага (если в проекте используется)
         let payload = AddressDetails(
             addressLine: addressLine,
             apartment: apartmentField.text ?? "",
             floor: floorField.text ?? "",
             entrance: entranceField.text ?? "",
             intercom: intercomField.text,
-            noCall: noCallSwitch.isOn,
+            noCall: false,                  // «Не звонить» удалён — всегда false
             saveAddress: saveAddressSwitch.isOn,
             addressName: saveAddressSwitch.isOn ? (addressNameField.text ?? "") : nil
         )
+
+        // Готовим отложенное сохранение (только если включён тумблер)
+        if saveAddressSwitch.isOn {
+            let item = SavedAddress(
+                label: (addressNameField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
+                line: addressLine,
+                apartment: apartmentField.text,
+                floor: floorField.text,
+                entrance: entranceField.text,
+                intercom: intercomField.text,
+                dontCall: false
+            )
+            PendingAddressKeeper.set(item)
+        } else {
+            PendingAddressKeeper.clear()
+        }
+
+        // Дальше — как и было: идём выбирать кол-во пакетов
         let vc = TrashQuantityViewController(details: payload)
         navigationItem.backButtonDisplayMode = .minimal
         navigationController?.pushViewController(vc, animated: true)

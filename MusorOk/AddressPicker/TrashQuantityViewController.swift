@@ -18,7 +18,7 @@ final class TrashQuantityViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError() }
 
     // цена
-    private let pricePerBagKZT = 150
+    private let pricePerBagKZT = Pricing.pricePerBagKZT
     private var count = 0 { didSet { updateUI() } }
 
     // UI
@@ -255,7 +255,7 @@ final class TrashQuantityViewController: UIViewController {
 
     @objc private func nextTapped() {
         guard count > 0 else { return }
-        let vc = OrderDetailsViewController(details: details, bagsCount: count, pricePerBagKZT: 150)
+        let vc = OrderDetailsViewController(details: details, bagsCount: count, pricePerBagKZT: pricePerBagKZT)
         vc.onEditAddress = { [weak self] in
             self?.navigationController?.popToViewControllerOfType(AddressPickerViewController.self)
         }

@@ -19,6 +19,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private var confirmBottomToSafeArea: NSLayoutConstraint!
     private var bottomPanelTop: NSLayoutConstraint!
     private var bottomToKeyboard: NSLayoutConstraint!
+    private var didSetInitialSheetState = false
     private var panStartHeight: CGFloat = 0
     private var mediumH: CGFloat = 0        // вычисляется по экрану
     private var expandedH: CGFloat = 0       // вычисляется по экрану
@@ -118,6 +119,18 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         super.viewDidLayoutSubviews()
         computeHeightsIfNeeded()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !didSetInitialSheetState else { return }
+        didSetInitialSheetState = true
+
+        DispatchQueue.main.async { [weak self] in
+            self?.computeHeightsIfNeeded()
+            self?.applySheetState(.medium, animated: false)
+            self?.view.layoutIfNeeded()
+        }
+    }
 
     // MARK: - Map / Search
     private func setupMap() {
@@ -172,7 +185,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
         bottomPanelTop = bottomPanel.topAnchor.constraint(
             equalTo: view.safeAreaLayoutGuide.topAnchor,
-            constant: view.bounds.height - 260
+            constant: view.bounds.height
         )
 
         if #available(iOS 15.0, *) {

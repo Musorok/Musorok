@@ -46,6 +46,11 @@ final class RootTabBarController: UITabBarController {
                                                selector: #selector(authStateChanged),
                                                name: .authStateDidChange,
                                                object: nil)
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(openMyOrdersActiveTab),
+                                               name: .openMyOrdersActive,
+                                               object: nil)
     }
 
     @objc private func authStateChanged() {
@@ -55,6 +60,20 @@ final class RootTabBarController: UITabBarController {
         } else {
             showOrdersAuth(animated: true)
         }
+    }
+    
+    @objc private func openMyOrdersActiveTab() {
+        // ➊ Если пользователь просил запомнить — сохраняем адрес сейчас (успешная оплата)
+        PendingAddressKeeper.flushIfNeeded()
+
+        // выбрать вкладку "Заказы"
+        selectedIndex = 1
+
+        // убедиться, что в корне стека именно MyOrdersViewController
+        showOrdersList(animated: false)
+
+        // попросить экран "Мои заказы" переключиться на "Активные"
+        NotificationCenter.default.post(name: .switchOrdersToActive, object: nil)
     }
 
     private func showOrdersList(animated: Bool) {

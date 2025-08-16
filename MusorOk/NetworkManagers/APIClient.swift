@@ -310,4 +310,13 @@ extension APIClient {
     }
 }
 
+extension APIClient {
+    func createOrPay(orderId: Int?, amount: Int, method: PaymentMethod, completion: @escaping (Result<Void, Error>) -> Void) {
+        // TODO: тут будет реальный POST на ваш бэк
+        // Пример: /orders/{id}/pay или /payment/create
+        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+            completion(.success(()))
+        }
+    }
+}
 
