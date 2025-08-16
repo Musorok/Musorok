@@ -321,9 +321,9 @@ final class CategoryViewController: UIViewController {
         // Чипы доверия (иконки SF Symbols — маленькие)
         chipsBar.configure(items: [
             .init(text: "Сегодня",         symbol: "calendar"),
-            .init(text: "от 150 ₸",        symbol: "tag"),
+            .init(text: "от 199 ₸",        symbol: "tag"),
             .init(text: "Оплата картой",   symbol: "creditcard"),
-            .init(text: "Быстро: 25–40 мин", symbol: "bolt")
+            .init(text: "Быстро: 5–15 мин", symbol: "bolt")
         ])
         chipsBar.accentColor = kind.accentColor
 
@@ -410,6 +410,13 @@ final class CategoryViewController: UIViewController {
     private func applyTheme() {
         let accent = kind.accentColor
         scheduleCard.accentColor = accent
+
+        switch kind {
+        case .household:    scheduleCard.mode = .household
+        case .construction: scheduleCard.mode = .construction
+        case .cleaning:     scheduleCard.mode = .cleaning
+        }
+
         if #available(iOS 15.0, *) {
             var cfg = actionButton.configuration ?? .filled()
             cfg.baseBackgroundColor = accent

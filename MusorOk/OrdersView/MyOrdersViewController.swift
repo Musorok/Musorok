@@ -60,7 +60,7 @@ final class MyOrdersViewController: UIViewController {
         bindActions()
 
         // стартуем с "История" как на скрине — если хочешь "Активные", поменяй на .active
-        switchTo(.history, animated: false)
+        switchTo(.active, animated: false)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(switchToActiveAndReload),
                                                name: .switchOrdersToActive,

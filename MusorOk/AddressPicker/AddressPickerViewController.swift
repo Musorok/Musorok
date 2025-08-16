@@ -188,11 +188,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             constant: view.bounds.height
         )
 
-        if #available(iOS 15.0, *) {
-            bottomToKeyboard = bottomPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor)
-        } else {
-            bottomToKeyboard = bottomPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        }
+        bottomToKeyboard = bottomPanel.bottomAnchor.constraint(equalTo: view.bottomAnchor)
 
         NSLayoutConstraint.activate([
             bottomPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -229,7 +225,6 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             // Кнопка подтверждения ВСЕГДА ВНИЗУ ШИТА (не реагирует на клавиатуру)
             confirmButton.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
             confirmButton.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
-            confirmButton.bottomAnchor.constraint(equalTo: bottomPanel.bottomAnchor, constant: -12),
             confirmButton.heightAnchor.constraint(equalToConstant: 56),
 
             // Разделитель над кнопкой
@@ -244,6 +239,22 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             suggestTable.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
             suggestTable.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -8)
         ])
+        
+        confirmBottomToSafeArea = confirmButton.bottomAnchor.constraint(
+            equalTo: bottomPanel.safeAreaLayoutGuide.bottomAnchor, constant: -12
+        )
+
+        // 2) когда есть клавиатура — прилипнуть к её верху
+        if #available(iOS 15.0, *) {
+            confirmBottomToKeyboard = confirmButton.bottomAnchor.constraint(
+                equalTo: view.keyboardLayoutGuide.topAnchor, constant: -12
+            )
+            confirmBottomToKeyboard?.priority = .required           // клавиатура — главнее
+            confirmBottomToSafeArea.priority = .defaultHigh         // запасной вариант
+            NSLayoutConstraint.activate([confirmBottomToSafeArea, confirmBottomToKeyboard!])
+        } else {
+            NSLayoutConstraint.activate([confirmBottomToSafeArea])
+        }
 
         view.layoutIfNeeded()
     }
