@@ -434,6 +434,7 @@ final class CategoryViewController: UIViewController {
         guard kind == .household else { return }
         let vc = AddressPickerViewController()
         vc.hidesBottomBarWhenPushed = true
+        self.navigationItem.backButtonTitle = ""
         navigationItem.backButtonDisplayMode = .minimal
         navigationController?.pushViewController(vc, animated: true)
     }

@@ -20,6 +20,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private var bottomPanelTop: NSLayoutConstraint!
     private var bottomToKeyboard: NSLayoutConstraint!
     private var didSetInitialSheetState = false
+    private var didPlayLocatePulse = false
     private var panStartHeight: CGFloat = 0
     private var mediumH: CGFloat = 0        // вычисляется по экрану
     private var expandedH: CGFloat = 0       // вычисляется по экрану
@@ -46,14 +47,24 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     // MARK: - UI
     private let locateButton: UIButton = {
         let b = UIButton(type: .system)
-        b.setImage(UIImage(systemName: "location.fill"), for: .normal)
-        b.tintColor = .white
-        b.backgroundColor = .brandGreen
-        b.layer.cornerRadius = 24
+        if let img = UIImage(named: "location")?.withRenderingMode(.alwaysOriginal) {
+            b.setImage(img, for: .normal)
+        }
+        b.tintColor = nil
+        b.backgroundColor = .clear
         b.translatesAutoresizingMaskIntoConstraints = false
-        b.widthAnchor.constraint(equalToConstant: 48).isActive = true
-        b.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        b.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        b.heightAnchor.constraint(equalToConstant: 40).isActive = true
         return b
+    }()
+    
+    private let suggestionsContainer: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = .secondarySystemBackground
+        v.layer.cornerRadius = 16
+        v.layer.masksToBounds = true
+        return v
     }()
 
     private let centerPin: UIView = {
@@ -83,7 +94,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private let separator: UIView = {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .quaternaryLabel
+        v.backgroundColor = .clear
         return v
     }()
 
@@ -128,6 +139,10 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         DispatchQueue.main.async { [weak self] in
             self?.computeHeightsIfNeeded()
             self?.applySheetState(.medium, animated: false)
+            if self?.didPlayLocatePulse == false {
+                self?.didPlayLocatePulse = true
+                self?.heartbeatLocateButton(times: 4)
+            }
             self?.view.layoutIfNeeded()
         }
     }
@@ -207,6 +222,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         bottomPanel.addSubview(grabber)
         bottomPanel.addSubview(addressField)
         bottomPanel.addSubview(suggestTable)
+        bottomPanel.addSubview(suggestionsContainer)
         bottomPanel.addSubview(separator)
         bottomPanel.addSubview(confirmButton)
 
@@ -219,25 +235,36 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
             // Address field — СРАЗУ ПОД граббером
             addressField.topAnchor.constraint(equalTo: grabber.bottomAnchor, constant: 12),
-            addressField.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
-            addressField.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
+            addressField.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 16),
+            addressField.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -16)
+        ])
+        
+        NSLayoutConstraint.activate([
+            // Контейнер со списком: серый фон, скругления 16, отступы 16 слева/справа
+            suggestionsContainer.topAnchor.constraint(equalTo: addressField.bottomAnchor, constant: 8),
+            suggestionsContainer.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 16),
+            suggestionsContainer.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -16),
+            suggestionsContainer.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -8),
 
-            // Кнопка подтверждения ВСЕГДА ВНИЗУ ШИТА (не реагирует на клавиатуру)
+            // Кнопка подтверждения (как было)
             confirmButton.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
             confirmButton.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
             confirmButton.heightAnchor.constraint(equalToConstant: 56),
 
-            // Разделитель над кнопкой
+            // Разделитель над кнопкой (как было)
             separator.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor),
             separator.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor),
-            separator.bottomAnchor.constraint(equalTo: confirmButton.topAnchor, constant: -12),
-            separator.heightAnchor.constraint(equalToConstant: 1),
-
-            // Таблица подсказок — между полем и кнопкой
-            suggestTable.topAnchor.constraint(equalTo: addressField.bottomAnchor, constant: 8),
-            suggestTable.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
-            suggestTable.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
-            suggestTable.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -8)
+            separator.bottomAnchor.constraint(equalTo: confirmButton.topAnchor, constant: -1),
+            separator.heightAnchor.constraint(equalToConstant: 1)
+        ])
+        
+        // Таблица ВНУТРИ контейнера
+        suggestionsContainer.addSubview(suggestTable)
+        NSLayoutConstraint.activate([
+            suggestTable.topAnchor.constraint(equalTo: suggestionsContainer.topAnchor),
+            suggestTable.leadingAnchor.constraint(equalTo: suggestionsContainer.leadingAnchor),
+            suggestTable.trailingAnchor.constraint(equalTo: suggestionsContainer.trailingAnchor),
+            suggestTable.bottomAnchor.constraint(equalTo: suggestionsContainer.bottomAnchor)
         ])
         
         confirmBottomToSafeArea = confirmButton.bottomAnchor.constraint(
@@ -337,7 +364,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private func wireSearchUI() {
         suggestTable.translatesAutoresizingMaskIntoConstraints = false
         suggestTable.isHidden = true
-        suggestTable.layer.cornerRadius = 14
+        suggestTable.backgroundColor = .clear
         suggestTable.clipsToBounds = true
         suggestTable.dataSource = self
         suggestTable.delegate = self
@@ -362,6 +389,29 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             locationManager.requestWhenInUseAuthorization()
         }
         locationManager.requestLocation()
+    }
+    
+    private func heartbeatLocateButton(times: Int = 2) {
+        // масштаб
+        let scale = CAKeyframeAnimation(keyPath: "transform.scale")
+        scale.values = [1.0, 1.2, 0.95, 1.0]          // заметнее на маленькой иконке
+        scale.keyTimes = [0, 0.35, 0.7, 1]
+        scale.duration = 0.6
+        scale.repeatCount = Float(times)
+        scale.isRemovedOnCompletion = true
+        scale.timingFunctions = [
+            CAMediaTimingFunction(name: .easeInEaseOut),
+            CAMediaTimingFunction(name: .easeInEaseOut),
+            CAMediaTimingFunction(name: .easeInEaseOut)
+        ]
+
+        // лёгкая «дышащая» тень вместе с пульсом
+        locateButton.layer.shadowColor = UIColor.black.cgColor
+        locateButton.layer.shadowOpacity = traitCollection.userInterfaceStyle == .dark ? 0.28 : 0.18
+        locateButton.layer.shadowRadius = 8
+        locateButton.layer.shadowOffset = .init(width: 0, height: 2)
+
+        locateButton.layer.add(scale, forKey: "pulse")
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -485,6 +535,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             // POST /orders { address_text: line, lat, lng, + детали подъезда }
         }
         navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.backButtonTitle = ""
         (navigationController ?? parent?.navigationController)?.pushViewController(vc, animated: true)
     }
 
@@ -570,6 +621,12 @@ extension AddressPickerViewController: UITableViewDataSource, UITableViewDelegat
         cfg.directionalLayoutMargins = .init(top: 6, leading: 10, bottom: 6, trailing: 10)
 
         c.contentConfiguration = cfg
+        if #available(iOS 14.0, *) {
+            c.backgroundConfiguration = .clear()
+        } else {
+            c.backgroundColor = .clear
+        }
+        c.contentView.backgroundColor = .clear
         return c
     }
 

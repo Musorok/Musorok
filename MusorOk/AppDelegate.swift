@@ -19,6 +19,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let mapkit = YMKMapKit.sharedInstance()
         mapkit.onStart()
         print("Bundle ID:", Bundle.main.bundleIdentifier ?? "nil")
+        
+        let app = UINavigationBarAppearance()
+        app.configureWithTransparentBackground()
+        app.backgroundEffect = nil
+        app.backgroundColor = .clear
+        app.shadowColor = .clear
+
+        // скрываем текст "Back"
+        let backTitle = UIBarButtonItemAppearance()
+        let clearAttrs: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.clear]
+        backTitle.normal.titleTextAttributes = clearAttrs
+        backTitle.highlighted.titleTextAttributes = clearAttrs
+        backTitle.disabled.titleTextAttributes = clearAttrs
+        backTitle.focused.titleTextAttributes = clearAttrs
+        app.backButtonAppearance = backTitle
+
+        UINavigationBar.appearance().tintColor = .label
+        UINavigationBar.appearance().standardAppearance = app
+        UINavigationBar.appearance().scrollEdgeAppearance = app
+        UINavigationBar.appearance().compactAppearance = app
         return true
     }
     
@@ -42,4 +62,75 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
+
+
+import UIKit
+
+final class NavBackCoordinator: NSObject, UINavigationControllerDelegate, UIGestureRecognizerDelegate {
+    private let imageName: String
+    private let leftShift: CGFloat
+
+    init(imageName: String = "nav_back", leftShift: CGFloat = -8) {
+        self.imageName = imageName
+        self.leftShift = leftShift
+        super.init()
+    }
+
+    func attach(to nav: UINavigationController) {
+        nav.delegate = self
+        nav.interactivePopGestureRecognizer?.delegate = self
+    }
+
+    func navigationController(_ navigationController: UINavigationController,
+                              willShow viewController: UIViewController, animated: Bool) {
+        // Корневой контроллер без back
+        guard navigationController.viewControllers.count > 1 else {
+            viewController.navigationItem.hidesBackButton = true
+            viewController.navigationItem.leftBarButtonItem = nil
+            return
+        }
+
+        // Скрываем системный back (текст мы уже скрыли через Appearance)
+        viewController.navigationItem.hidesBackButton = true
+
+        // Кнопка с картинкой из ассетов в ОРИГИНАЛЬНОМ цвете
+        let btn = UIButton(type: .system)
+        if let img = UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal) {
+            // Если у ассета есть "воздух", компенсируем его:
+            let adjusted = img.withAlignmentRectInsets(UIEdgeInsets(top: 0, left: leftShift, bottom: 0, right: 0))
+            btn.setImage(adjusted, for: .normal)
+        }
+
+        // Размер и зона нажатия
+        btn.widthAnchor.constraint(equalToConstant: 28).isActive = true
+        btn.heightAnchor.constraint(equalToConstant: 28).isActive = true
+
+        // Сдвиг ближе к левому краю; подстрой при необходимости (-6…-12)
+        btn.contentEdgeInsets = UIEdgeInsets(top: 0, left: -6, bottom: 0, right: 0)
+
+        btn.addTarget(self, action: #selector(pop(_:)), for: .touchUpInside)
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: btn)
+    }
+
+    @objc private func pop(_ sender: Any?) {
+        // Находим активный nav и делаем pop
+        if let nav = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?
+            .windows.first(where: { $0.isKeyWindow })?.rootViewController as? UINavigationController {
+            nav.popViewController(animated: true)
+        } else {
+            // Поддержка, если у тебя root = UITabBarController
+            if let tab = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?
+                .windows.first(where: { $0.isKeyWindow })?.rootViewController as? UITabBarController,
+               let nav = tab.selectedViewController as? UINavigationController {
+                nav.popViewController(animated: true)
+            }
+        }
+    }
+
+    // Жест "свайп-назад" должен работать
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        true
+    }
+}
+
 
