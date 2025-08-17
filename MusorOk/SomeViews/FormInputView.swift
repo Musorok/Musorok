@@ -15,31 +15,41 @@ final class FormInputView: UIView, UITextFieldDelegate {
     var text: String? { field.text }             // отформатированный текст (телефон — с +7 и пробелами)
     var rawText: String? { rawValue }            // "сырое" значение: для телефона это 10 цифр без кода страны
     var onTextChange: ((String) -> Void)?
-    var isKZPhoneMask: Bool = false              // Включает форматирование телефона
+    var isKZPhoneMask: Bool = false              // включает форматирование телефона
 
     // MARK: UI
     private let titleLabel = UILabel()
     private let field = PaddedTextField()
     private var eyeButton: UIButton?
+    private var clearButton: UIButton?
+
+    // MARK: Config
     private let isSecure: Bool
+    private let showsClearButton: Bool
     private var rawValue: String?                // хранит "сырое" значение (для телефона — 10 цифр)
 
+    // MARK: Init
     init(title: String,
          placeholder: String,
          keyboard: UIKeyboardType,
          isSecure: Bool,
-         isKZPhoneMask: Bool = false) {
+         isKZPhoneMask: Bool = false,
+         showsClearButton: Bool = false) {
+
         self.isSecure = isSecure
         self.isKZPhoneMask = isKZPhoneMask
+        self.showsClearButton = showsClearButton
         super.init(frame: .zero)
 
         translatesAutoresizingMaskIntoConstraints = false
 
+        // Title
         titleLabel.text = title
         titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
         titleLabel.textColor = .secondaryLabel
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
+        // TextField
         field.keyboardType = keyboard
         field.autocorrectionType = .no
         field.autocapitalizationType = .none
@@ -53,7 +63,7 @@ final class FormInputView: UIView, UITextFieldDelegate {
         field.delegate = self
         field.translatesAutoresizingMaskIntoConstraints = false
         field.heightAnchor.constraint(equalToConstant: 54).isActive = true
-        
+
         if isKZPhoneMask {
             field.attributedPlaceholder = NSAttributedString(
                 string: "+7 ___ ___ __ __",
@@ -61,16 +71,27 @@ final class FormInputView: UIView, UITextFieldDelegate {
             )
         }
 
+        // Right view: приоритет у "глаза" (secure). Если не secure — можно показать кнопку очистки.
         if isSecure {
-            field.isSecureTextEntry = true
             let b = UIButton(type: .system)
             b.setImage(UIImage(systemName: "eye"), for: .normal)
             b.tintColor = .tertiaryLabel
             b.addTarget(self, action: #selector(toggleSecure), for: .touchUpInside)
-            b.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
+            b.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+            b.contentEdgeInsets = .zero
             field.rightView = b
             field.rightViewMode = .always
             eyeButton = b
+        } else if showsClearButton {
+            let b = UIButton(type: .system)
+            b.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+            b.tintColor = .tertiaryLabel
+            b.addTarget(self, action: #selector(clearText), for: .touchUpInside)
+            b.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+            b.contentEdgeInsets = .zero
+            field.rightView = b
+            field.rightViewMode = .always
+            clearButton = b
         }
 
         addSubview(titleLabel)
@@ -94,7 +115,22 @@ final class FormInputView: UIView, UITextFieldDelegate {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    
+
+    // MARK: - Actions
+    @objc private func toggleSecure() {
+        field.isSecureTextEntry.toggle()
+        let name = field.isSecureTextEntry ? "eye" : "eye.slash"
+        eyeButton?.setImage(UIImage(systemName: name), for: .normal)
+    }
+
+    @objc private func clearText() {
+        field.text = ""
+        rawValue = nil
+        onTextChange?("")
+        updateColors()
+    }
+
+    // MARK: - UI Feedback
     private func shake(_ v: UIView) {
         let anim = CAKeyframeAnimation(keyPath: "transform.translation.x")
         anim.values = [-6, 6, -5, 5, -3, 3, 0]
@@ -106,12 +142,7 @@ final class FormInputView: UIView, UITextFieldDelegate {
         }
     }
 
-    @objc private func toggleSecure() {
-        field.isSecureTextEntry.toggle()
-        let name = field.isSecureTextEntry ? "eye" : "eye.slash"
-        eyeButton?.setImage(UIImage(systemName: name), for: .normal)
-    }
-
+    // MARK: - Colors / State
     @objc private func editingChanged() {
         if isKZPhoneMask {
             // Переформатируем полностью после любого изменения
@@ -125,7 +156,7 @@ final class FormInputView: UIView, UITextFieldDelegate {
     }
     @objc private func editingEnded() { updateColors() }
     @objc private func editingBegan() { updateColors() }
-    
+
     func setErrorVisible(_ on: Bool) {
         layer.borderWidth = on ? 1 : 0
         layer.borderColor = on ? UIColor.systemRed.cgColor : nil
@@ -146,11 +177,14 @@ final class FormInputView: UIView, UITextFieldDelegate {
             }
         }
 
-        // 🔔 Шейк только когда вошли в состояние ошибки (false -> true)
-        if isPrefixError && !wasPrefixError {
-            shake(field)
-        }
+        // Шейк только при входе в ошибку
+        if isPrefixError && !wasPrefixError { shake(field) }
         wasPrefixError = isPrefixError
+        
+        if let clear = clearButton {
+            clear.isUserInteractionEnabled = hasText
+            clear.alpha = hasText ? 1.0 : 0.4
+        }
 
         field.layer.borderColor = border.cgColor
         titleLabel.textColor = title
@@ -161,7 +195,7 @@ final class FormInputView: UIView, UITextFieldDelegate {
                    shouldChangeCharactersIn range: NSRange,
                    replacementString string: String) -> Bool {
         guard isKZPhoneMask else { return true }
-        // Делаем "свою" замену: считаем новые цифры и кладём отформатированный текст
+        // своя замена с форматированием
         let current = textField.text ?? ""
         let new = (current as NSString).replacingCharacters(in: range, with: string)
         let digits = PhoneFormatter.onlyDigits(from: new)
@@ -170,18 +204,16 @@ final class FormInputView: UIView, UITextFieldDelegate {
         rawValue = formatted.nationalDigits
         onTextChange?(formatted.text)
         updateColors()
-        return false // уже выставили текст сами
+        return false
     }
-    
+
     func setText(_ text: String) {
         if isKZPhoneMask {
-            // если инпут телефонный — форматируем как +7 XXX XXX XX XX
             let digits = PhoneFormatter.onlyDigits(from: text)
             let formatted = PhoneFormatter.formatKZ(digits: digits)
             field.text = formatted.text
             rawValue = formatted.nationalDigits
         } else {
-            // обычный текст (адрес и т.п.)
             field.text = text
             rawValue = text
         }
@@ -190,10 +222,31 @@ final class FormInputView: UIView, UITextFieldDelegate {
     }
 }
 
-// UITextField с паддингами
+// MARK: - UITextField с динамическими паддингами под rightView
 final class PaddedTextField: UITextField {
-    private let insets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
-    override func textRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: insets) }
-    override func editingRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: insets) }
-    override func placeholderRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: insets) }
+    private let baseInsets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
+    private let rightPadding: CGFloat = 5            // ⬅️ Ровно 5 pt от правого края
+    private let gapTextToRightView: CGFloat = 6      // зазор между текстом и иконкой
+    private let rightViewSize: CGFloat = 24          // размер кнопок X/eye
+
+    override func rightViewRect(forBounds bounds: CGRect) -> CGRect {
+        let size = rightViewSize
+        let y = (bounds.height - size) / 2.0
+        // Кнопка стоит в 5 pt от правого края поля
+        return CGRect(x: bounds.width - size - rightPadding, y: y, width: size, height: size)
+    }
+
+    private func adjustedInsets() -> UIEdgeInsets {
+        var i = baseInsets
+        if rightView != nil, rightViewMode != .never {
+            // Сдвигаем правый инсет так, чтобы текст не попадал под иконку
+            let needed = rightPadding + rightViewSize + gapTextToRightView
+            i.right = max(i.right, needed)
+        }
+        return i
+    }
+
+    override func textRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: adjustedInsets()) }
+    override func editingRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: adjustedInsets()) }
+    override func placeholderRect(forBounds bounds: CGRect) -> CGRect { bounds.inset(by: adjustedInsets()) }
 }
