@@ -89,7 +89,7 @@ final class LoginViewController: UIViewController {
                 case .failure(let err):
                     self.loginButton.isEnabled = true
                     let alert = UIAlertController(title: "Ошибка входа",
-                                                  message: err.localizedDescription,
+                                                  message: "Неверный номер или пароль",
                                                   preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     self.present(alert, animated: true)
