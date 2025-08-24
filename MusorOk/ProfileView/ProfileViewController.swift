@@ -67,7 +67,7 @@ final class ProfileViewController: UIViewController {
 
     private func setupMenu() {
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = 5
         stack.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(stack)
 
@@ -119,7 +119,7 @@ final class ProfileViewController: UIViewController {
                         titleColor: UIColor = .label,
                         action: @escaping () -> Void) {
         let container = UIControl()
-        container.backgroundColor = .secondarySystemBackground
+        container.backgroundColor = .clear
         container.layer.cornerRadius = 14
         container.translatesAutoresizingMaskIntoConstraints = false
         container.heightAnchor.constraint(equalToConstant: 56).isActive = true
