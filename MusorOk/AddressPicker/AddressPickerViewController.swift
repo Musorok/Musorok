@@ -25,6 +25,12 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private var mediumH: CGFloat = 0        // вычисляется по экрану
     private var expandedH: CGFloat = 0       // вычисляется по экрану
     private var didComputeHeights = false
+    private var lastHeadingRadians: CGFloat?
+    private var lastAzimuthRadians: CGFloat = 0
+    private let pinBeam   = CAShapeLayer() // полупрозрачный сектор-направление
+    private let pinRing   = CAShapeLayer() // белое кольцо
+    private let pinDot    = CAShapeLayer() // синяя точка
+    private let pinTick   = CAShapeLayer() // короткий «носик» внутри точки
 
     // MARK: - Map / Location
     private var ymapView: YMKMapView!
@@ -61,7 +67,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private let suggestionsContainer: UIView = {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .secondarySystemBackground
+        v.backgroundColor = .mapYellow
         v.layer.cornerRadius = 16
         v.layer.masksToBounds = true
         return v
@@ -70,12 +76,9 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
     private let centerPin: UIView = {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .brandGreen
-        v.layer.cornerRadius = 10
-        v.layer.borderWidth = 3
-        v.layer.borderColor = UIColor.white.cgColor
-        v.widthAnchor.constraint(equalToConstant: 20).isActive = true
-        v.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        v.backgroundColor = .clear
+        v.widthAnchor.constraint(equalToConstant: 26).isActive = true
+        v.heightAnchor.constraint(equalToConstant: 30).isActive = true
         return v
     }()
 
@@ -94,7 +97,8 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         placeholder: "Введите адрес",
         keyboard: .default,
         isSecure: false,
-        showsClearButton: true
+        showsClearButton: true,
+        titleActiveColor: .systemGray
     )
 
     private let separator: UIView = {
@@ -192,6 +196,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
 
         // Центр-пин
         view.addSubview(centerPin)
+        drawCenterPin()
         NSLayoutConstraint.activate([
             centerPin.centerXAnchor.constraint(equalTo: ymapView.centerXAnchor),
             centerPin.centerYAnchor.constraint(equalTo: ymapView.centerYAnchor, constant: -12)
@@ -253,8 +258,8 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             suggestionsContainer.bottomAnchor.constraint(equalTo: separator.topAnchor, constant: -8),
 
             // Кнопка подтверждения (как было)
-            confirmButton.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 24),
-            confirmButton.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -24),
+            confirmButton.leadingAnchor.constraint(equalTo: bottomPanel.leadingAnchor, constant: 16),
+            confirmButton.trailingAnchor.constraint(equalTo: bottomPanel.trailingAnchor, constant: -16),
             confirmButton.heightAnchor.constraint(equalToConstant: 56),
 
             // Разделитель над кнопкой (как было)
@@ -290,6 +295,7 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         }
 
         view.layoutIfNeeded()
+        drawCenterPin()
     }
 
     private func computeHeightsIfNeeded() {
@@ -346,6 +352,60 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             break
         }
     }
+    
+    private func drawCenterPin() {
+        centerPin.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+
+        let W: CGFloat = 26, H: CGFloat = 30
+        let center = CGPoint(x: W/2, y: H/2 + 2)       // слегка смещаем вниз, чтобы «сидел» на карте
+        let ringR: CGFloat = 12                        // внешний радиус кольца
+        let dotR: CGFloat  = 9                         // радиус синей точки
+
+        // 1) Луч-направление (за точкой)
+        pinBeam.fillColor = UIColor.systemBlue.withAlphaComponent(0.18).cgColor
+        pinBeam.strokeColor = nil
+        pinBeam.lineWidth = 0
+        pinBeam.zPosition = -1 // позади остальных
+        centerPin.layer.addSublayer(pinBeam)
+
+        // 2) Белое кольцо
+        let ringPath = UIBezierPath(ovalIn: CGRect(x: center.x - ringR, y: center.y - ringR, width: ringR*2, height: ringR*2))
+        pinRing.path = ringPath.cgPath
+        pinRing.fillColor = UIColor.white.cgColor
+        pinRing.strokeColor = UIColor.white.cgColor
+        pinRing.lineWidth = 0
+        centerPin.layer.addSublayer(pinRing)
+
+        // 3) Синяя точка
+        let dotPath = UIBezierPath(ovalIn: CGRect(x: center.x - dotR, y: center.y - dotR, width: dotR*2, height: dotR*2))
+        pinDot.path = dotPath.cgPath
+        pinDot.fillColor = UIColor.systemBlue.cgColor  // #0A84FF-подобный
+        pinDot.strokeColor = nil
+        centerPin.layer.addSublayer(pinDot)
+
+        // 4) Короткий «носик» внутри точки (как в Apple/2ГИС)
+        let tickWidth: CGFloat = 6
+        let tickHeight: CGFloat = 6
+        let tickTop = CGPoint(x: center.x, y: center.y - dotR + 1.5)
+        let tickPath = UIBezierPath()
+        tickPath.move(to: tickTop)
+        tickPath.addLine(to: CGPoint(x: tickTop.x - tickWidth/2, y: tickTop.y + tickHeight))
+        tickPath.addLine(to: CGPoint(x: tickTop.x + tickWidth/2, y: tickTop.y + tickHeight))
+        tickPath.close()
+
+        pinTick.path = tickPath.cgPath
+        pinTick.fillColor = UIColor.white.withAlphaComponent(0.9).cgColor
+        pinTick.strokeColor = nil
+        centerPin.layer.addSublayer(pinTick)
+
+        // Чтоб всё вращалось гладко
+        centerPin.layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        centerPin.layer.shouldRasterize = true
+        centerPin.layer.rasterizationScale = UIScreen.main.scale
+
+        // Первичная форма луча (узкий — обновим ширину по точности позже)
+        updateBeam(spreadRadians: .pi/9) // ~20°
+    }
 
     private func applySheetState(_ state: SheetState, animated: Bool) {
         sheetState = state
@@ -391,8 +451,9 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = 10
-        if CLLocationManager.authorizationStatus() == .notDetermined {
-            locationManager.requestWhenInUseAuthorization()
+        if CLLocationManager.headingAvailable() {
+            locationManager.headingFilter = 5   // обновлять каждые ~5°
+            locationManager.startUpdatingHeading()
         }
         locationManager.requestLocation()
     }
@@ -430,6 +491,29 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
             centerOnUser()
         }
     }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        let deg = (newHeading.trueHeading >= 0) ? newHeading.trueHeading : newHeading.magneticHeading
+        guard deg >= 0 else {
+            lastHeadingRadians = nil
+            // когда компаса нет — оставим луч узким и будем крутить по азимуту карты
+            updateBeam(spreadRadians: .pi/9)
+            return
+        }
+
+        let radians = CGFloat(deg) * .pi / 180
+        lastHeadingRadians = radians
+
+        // Ширина луча = точность компаса
+        let spread = beamSpread(for: newHeading.headingAccuracy)
+        updateBeam(spreadRadians: spread)
+
+        // Прозрачность луча: чем хуже точность, тем шире и чуть бледнее
+        let alpha = max(0.12, 0.28 - (spread - .pi/9) * 0.25) // лёгкая адаптация
+        pinBeam.fillColor = UIColor.systemBlue.withAlphaComponent(alpha).cgColor
+
+        setCenterPinAngle(radians)
+    }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Location error:", error.localizedDescription)
@@ -443,6 +527,23 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         if finished {
             let p = cameraPosition.target
             reverseGeocodeYandex(YMKPoint(latitude: p.latitude, longitude: p.longitude))
+        }
+        lastAzimuthRadians = CGFloat(cameraPosition.azimuth) * .pi / 180
+        if lastHeadingRadians == nil {
+            updateBeam(spreadRadians: .pi/9) // узкий «уверенный» луч
+            setCenterPinAngle(lastAzimuthRadians)
+        }
+    }
+
+    
+    private func setCenterPinAngle(_ radians: CGFloat, animated: Bool = true) {
+        let apply = {
+            self.centerPin.transform = CGAffineTransform(rotationAngle: radians)
+        }
+        if animated {
+            UIView.animate(withDuration: 0.18, delay: 0, options: [.allowUserInteraction, .curveEaseInOut], animations: apply)
+        } else {
+            apply()
         }
     }
 
@@ -459,6 +560,31 @@ final class AddressPickerViewController: UIViewController, CLLocationManagerDele
         let work = DispatchWorkItem { [weak self] in self?.forwardSearchYandex(query) }
         searchWorkItem = work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
+    }
+    
+    private func updateBeam(spreadRadians: CGFloat, length: CGFloat = 70) {
+        let W: CGFloat = 26, H: CGFloat = 30
+        let c = CGPoint(x: W/2, y: H/2 + 2)
+
+        // Сектор вперёд («вверх» по вью), потом поворачиваем весь пин transform-ом
+        let start = -spreadRadians/2 - .pi/2   // «вверх» это -π/2 в системе Core Animation
+        let end   =  spreadRadians/2 - .pi/2
+
+        let p = UIBezierPath()
+        p.move(to: c)
+        p.addArc(withCenter: c, radius: length, startAngle: start, endAngle: end, clockwise: true)
+        p.close()
+        pinBeam.path = p.cgPath
+    }
+
+    /// Нормализовать ширину луча по точности компаса (в градусах)
+    private func beamSpread(for headingAccuracy: CLLocationDirectionAccuracy?) -> CGFloat {
+        guard let acc = headingAccuracy, acc > 0, acc.isFinite else {
+            return .pi/9 // дефолт узкий ~20° если точности нет
+        }
+        // Ограничим 20°...90°
+        let deg = max(20.0, min(90.0, acc))
+        return CGFloat(deg) * .pi / 180.0
     }
 
     private func forwardSearchYandex(_ query: String) {

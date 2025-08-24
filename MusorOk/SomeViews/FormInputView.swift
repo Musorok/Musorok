@@ -15,7 +15,8 @@ final class FormInputView: UIView, UITextFieldDelegate {
     var text: String? { field.text }             // отформатированный текст (телефон — с +7 и пробелами)
     var rawText: String? { rawValue }            // "сырое" значение: для телефона это 10 цифр без кода страны
     var onTextChange: ((String) -> Void)?
-    var isKZPhoneMask: Bool = false              // включает форматирование телефона
+    var isKZPhoneMask: Bool = false
+    private let titleActiveColor: UIColor?
 
     // MARK: UI
     private let titleLabel = UILabel()
@@ -34,11 +35,13 @@ final class FormInputView: UIView, UITextFieldDelegate {
          keyboard: UIKeyboardType,
          isSecure: Bool,
          isKZPhoneMask: Bool = false,
-         showsClearButton: Bool = false) {
+         showsClearButton: Bool = false,
+         titleActiveColor: UIColor? = nil) {
 
         self.isSecure = isSecure
         self.isKZPhoneMask = isKZPhoneMask
         self.showsClearButton = showsClearButton
+        self.titleActiveColor = titleActiveColor
         super.init(frame: .zero)
 
         translatesAutoresizingMaskIntoConstraints = false
@@ -164,8 +167,9 @@ final class FormInputView: UIView, UITextFieldDelegate {
 
     private func updateColors() {
         let hasText = !(field.text?.isEmpty ?? true)
+        let activeTitle = titleActiveColor ?? .brandGreen
         var border: UIColor = hasText ? .brandGreen : .systemGray4
-        var title:  UIColor = hasText ? .brandGreen : .secondaryLabel
+        var title:  UIColor = hasText ? activeTitle : .secondaryLabel
 
         var isPrefixError = false
         if isKZPhoneMask {
