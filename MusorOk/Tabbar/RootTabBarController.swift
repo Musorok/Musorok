@@ -18,7 +18,7 @@ final class RootTabBarController: UITabBarController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
 
-        let brand = UIColor.systemGreen
+        let brand = UIColor.brandGreen
         setupTabBarAppearance(brand: brand)
         let home = UINavigationController(rootViewController: HomeViewController())
         home.tabBarItem = makeSystemTabItem(
